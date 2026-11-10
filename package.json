@@ -2,16 +2,21 @@
 	"name": "houston-stratified-noise",
 	"private": true,
 	"type": "module",
-	"description": "Reference implementation, reproducible analysis and interactive explorer for Houston Stratified Noise (Hierarchical Hashed Weyl in Three.js).",
+	"description": "Reference implementation, reproducible analysis and interactive explorer for Houston Stratified Noise.",
 	"license": "MIT",
 	"packageManager": "pnpm@12.16.1",
 	"scripts": {
 		"test": "node --test src/noise/noise.test.js",
 		"analysis:solution": "node analysis/solution/structure.js && node analysis/solution/step-pairs.js && node analysis/solution/figures.js",
-		"analysis:spatial": "uv run --no-project --python 3.12 --with-requirements analysis/spatial/requirements.txt analysis/spatial/run_all.py",
+		"analysis:spatial": "pnpm py analysis/spatial/run_all.py",
 		"dev": "vite",
 		"build": "vite build",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"py": "uv run --no-project --python 3.12 --with-requirements analysis/requirements.txt",
+		"analysis:temporal": "pnpm py analysis/temporal/run_all.py",
+		"analysis:steps": "pnpm py analysis/steps/search.py cands && pnpm py analysis/steps/search.py select && pnpm py analysis/steps/search.py validate && pnpm py analysis/steps/report.py",
+		"analysis:gpu": "pnpm py analysis/gpu/figure.py && pnpm py analysis/gpu/figure_variants.py",
+		"analysis:r4-ablation": "pnpm py analysis/r4-ablation/run.py"
 	},
 	"devDependencies": {
 		"sharp": "^0.35.5",

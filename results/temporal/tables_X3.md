@@ -1,0 +1,34 @@
+
+**X3 (a). Each step alone as a 1-value sequence.** Per-pixel RMSE x 1e-3 over the 10 1-value integrands (64x64 pixels, no spatial filter), then steady-state RMSE under EMA alpha=0.1 with no blur and with a 3x3 box. "Nearest fraction" is the p/q (q <= 64) minimising q|q*step - p|; the theoretical optimum for that product is 0.447 (golden ratio), and small values mean the sequence nearly repeats every q frames.
+
+| Step | value | nearest fraction (q|q a - p|) | continued fraction | N=7 | N=8 | N=16 | N=32 | N=64 | N=256 | EMA, no blur | EMA + 3x3 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| golden | 0.618034 | 1/1 (0.382) | [0, 1, 1, 1, 1, 1, 1, 1] | 74.0 | 51.1 | 32.6 | 17.6 | 10.0 | 2.56 | 35.2 | 8.87 |
+| R2_STEPS[0] | 0.754878 | 3/4 (0.078) | [0, 1, 3, 12, 1, 1, 3, 2] | 92.8 | 72.9 | 58.8 | 33.2 | 15.1 | 2.43 | 52.7 | 20.2 |
+| R2_STEPS[1] | 0.569840 | 4/7 (0.078) | [0, 1, 1, 3, 12, 1, 1, 3] | 54.2 | 70.2 | 51.2 | 38.5 | 17.7 | 3.42 | 49.1 | 10.7 |
+| R4_STEPS[0] | 0.856675 | 6/7 (0.023) | [0, 1, 5, 1, 42, 1, 3, 24] | 54.1 | 72.7 | 64.5 | 53.8 | 43.8 | 9.24 | 64.1 | 13.4 |
+| R4_STEPS[1] | 0.733892 | 11/15 (0.126) | [0, 1, 2, 1, 3, 7, 1, 2] | 70.7 | 62.8 | 35.7 | 27.0 | 14.8 | 2.91 | 40.0 | 10.6 |
+| R4_STEPS[2] | 0.628707 | 22/35 (0.166) | [0, 1, 1, 1, 2, 3, 1, 5] | 71.1 | 44.7 | 31.5 | 16.8 | 11.6 | 2.84 | 36.0 | 10.9 |
+| R4_STEPS[3] | 0.538597 | 7/13 (0.023) | [0, 1, 1, 5, 1, 42, 1, 3] | 107.4 | 92.7 | 46.2 | 36.2 | 27.2 | 16.2 | 49.9 | 11.9 |
+
+**X3 (b). Pairs of steps for two dimensions (seeds 1, 2 in every row).** Per-pixel RMSE x 1e-3 over the 14 2-value integrands, then EMA alpha=0.1 without blur and with a 3x3 box. "Resonance" is the small integer combination k1*a1 + k2*a2 closest to an integer (|k| <= 8): the pair's samples lie on lines when it is near zero.
+
+| Steps | resonance | N=7 | N=8 | N=16 | N=32 | N=64 | N=256 | EMA, no blur | EMA + 3x3 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| R2_STEPS | 1*a1 +0*a2: 0.2451 | 90.1 | 84.2 | 51.3 | 31.1 | 16.2 | 5.18 | 50.3 | 16.9 |
+| R4_STEPS[0],[1] (PR VXGI) | 1*a1 +0*a2: 0.1433 | 79.3 | 77.7 | 56.1 | 37.2 | 24.6 | 6.42 | 55.4 | 17.0 |
+| R4_STEPS[0],[2] | 1*a1 +5*a2: 0.0002 | 85.2 | 73.7 | 53.9 | 31.8 | 24.6 | 11.1 | 51.3 | 16.3 |
+| R4_STEPS[0],[3] | 1*a1 +0*a2: 0.1433 | 86.8 | 82.8 | 50.7 | 36.2 | 26.3 | 9.72 | 51.6 | 14.3 |
+| R4_STEPS[1],[2] | 1*a1 +2*a2: 0.0087 | 100.6 | 82.0 | 66.0 | 51.0 | 31.3 | 7.06 | 63.0 | 21.2 |
+| R4_STEPS[1],[3] | 2*a1 +1*a2: 0.0064 | 96.5 | 88.8 | 60.1 | 50.1 | 38.1 | 12.4 | 60.4 | 19.5 |
+| R4_STEPS[2],[3] | 1*a1 -3*a2: 0.0129 | 102.2 | 87.6 | 53.5 | 32.3 | 22.4 | 9.03 | 51.6 | 17.7 |
+| golden, golden (shared) | 1*a1 -1*a2: 0.0000 | 154.0 | 145.4 | 139.8 | 137.4 | 136.6 | 136.3 | 140.6 | 55.2 |
+
+**X3 (c). Four dimensions.** Per-pixel RMSE x 1e-3 over the 19 4-value integrands, then EMA alpha=0.1 without blur and with a 3x3 box. The sqrt-primes row uses fract(sqrt(2, 3, 5, 7)) as steps: a neutral, untuned Kronecker alternative.
+
+| Steps | N=7 | N=8 | N=16 | N=32 | N=64 | N=256 | EMA, no blur | EMA + 3x3 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| R4_STEPS (PR SSR) | 107.7 | 95.9 | 63.2 | 42.7 | 31.0 | 11.1 | 62.4 | 20.2 |
+| sqrt-primes steps | 133.0 | 120.1 | 70.9 | 39.7 | 26.0 | 8.57 | 68.3 | 24.7 |
+| golden x4 (shared) | 196.3 | 188.0 | 180.9 | 178.2 | 177.4 | 177.0 | 181.7 | 72.8 |
+| White (PCG hash) | 171.1 | 160.3 | 113.8 | 80.4 | 57.3 | 28.4 | 104.5 | 34.8 |

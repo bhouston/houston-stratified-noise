@@ -1,0 +1,409 @@
+[
+ {
+  "heading": "",
+  "title": "**X1 (a). Per-pixel 2-value convergence, RMSE x 1e-3 over the 14 2-value integrands, 64x64 pixels, no spatial filter**",
+  "head": [
+   "Method",
+   "N=1",
+   "N=4",
+   "N=16",
+   "N=64",
+   "N=256"
+  ],
+  "rows": [
+   [
+    "HSN, R2 steps (standard, independent seeds)",
+    "393.5",
+    "130.7",
+    "51.3",
+    "16.2",
+    "5.18"
+   ],
+   [
+    "HSN, R2 steps, bit-reversed rank pairing",
+    "393.9",
+    "130.9",
+    "51.0",
+    "16.3",
+    "5.18"
+   ],
+   [
+    "White (PCG hash)",
+    "393.3",
+    "196.4",
+    "97.7",
+    "49.4",
+    "24.6"
+   ],
+   [
+    "FAST 128x128x32 texture",
+    "394.1",
+    "146.3",
+    "51.0",
+    "19.9",
+    "9.96"
+   ]
+  ]
+ },
+ {
+  "heading": "",
+  "title": "**X1 (b). Single-frame 2-value error, RMSE x 1e-3 over the 14 2-value integrands (mean of frames 0-15, 128x128 pixels)**",
+  "head": [
+   "Method",
+   "no filter",
+   "3x3 box",
+   "Gauss s=1",
+   "Gauss s=2",
+   "aligned 8x8 tile mean"
+  ],
+  "rows": [
+   [
+    "HSN, R2 steps (standard, independent seeds)",
+    "394.0",
+    "115.1",
+    "94.5",
+    "44.3",
+    "37.0"
+   ],
+   [
+    "HSN, R2 steps, bit-reversed rank pairing",
+    "394.0",
+    "163.2",
+    "144.8",
+    "78.7",
+    "17.0"
+   ],
+   [
+    "White (PCG hash)",
+    "394.0",
+    "131.5",
+    "111.4",
+    "55.9",
+    "49.5"
+   ],
+   [
+    "FAST 128x128x32 texture",
+    "394.1",
+    "84.0",
+    "60.8",
+    "22.0",
+    "24.2"
+   ]
+  ]
+ },
+ {
+  "heading": "",
+  "title": "**X1 (b). The same, integrand group \"smooth\"**",
+  "head": [
+   "Method",
+   "no filter",
+   "3x3 box",
+   "Gauss s=1",
+   "Gauss s=2",
+   "aligned 8x8 tile mean"
+  ],
+  "rows": [
+   [
+    "HSN, R2 steps (standard, independent seeds)",
+    "301.6",
+    "104.6",
+    "89.1",
+    "44.9",
+    "38.6"
+   ],
+   [
+    "HSN, R2 steps, bit-reversed rank pairing",
+    "301.7",
+    "93.1",
+    "79.3",
+    "41.5",
+    "2.87"
+   ],
+   [
+    "White (PCG hash)",
+    "301.6",
+    "100.5",
+    "85.1",
+    "42.5",
+    "37.7"
+   ],
+   [
+    "FAST 128x128x32 texture",
+    "301.7",
+    "68.6",
+    "50.8",
+    "15.1",
+    "17.7"
+   ]
+  ]
+ },
+ {
+  "heading": "",
+  "title": "**X1 (b). The same, integrand group \"edge\"**",
+  "head": [
+   "Method",
+   "no filter",
+   "3x3 box",
+   "Gauss s=1",
+   "Gauss s=2",
+   "aligned 8x8 tile mean"
+  ],
+  "rows": [
+   [
+    "HSN, R2 steps (standard, independent seeds)",
+    "461.2",
+    "129.9",
+    "105.7",
+    "48.4",
+    "40.0"
+   ],
+   [
+    "HSN, R2 steps, bit-reversed rank pairing",
+    "461.2",
+    "204.5",
+    "182.8",
+    "100.3",
+    "22.4"
+   ],
+   [
+    "White (PCG hash)",
+    "461.1",
+    "153.9",
+    "130.4",
+    "65.5",
+    "58.1"
+   ],
+   [
+    "FAST 128x128x32 texture",
+    "461.3",
+    "95.1",
+    "67.7",
+    "25.5",
+    "27.9"
+   ]
+  ]
+ },
+ {
+  "heading": "",
+  "title": "**X1 (b). The same, integrand group \"render\"**",
+  "head": [
+   "Method",
+   "no filter",
+   "3x3 box",
+   "Gauss s=1",
+   "Gauss s=2",
+   "aligned 8x8 tile mean"
+  ],
+  "rows": [
+   [
+    "HSN, R2 steps (standard, independent seeds)",
+    "326.9",
+    "88.7",
+    "71.1",
+    "31.7",
+    "25.9"
+   ],
+   [
+    "HSN, R2 steps, bit-reversed rank pairing",
+    "326.9",
+    "123.1",
+    "107.4",
+    "56.0",
+    "12.7"
+   ],
+   [
+    "White (PCG hash)",
+    "327.4",
+    "109.2",
+    "92.4",
+    "46.3",
+    "40.6"
+   ],
+   [
+    "FAST 128x128x32 texture",
+    "327.0",
+    "74.2",
+    "55.6",
+    "21.2",
+    "22.3"
+   ]
+  ]
+ },
+ {
+  "heading": "",
+  "title": "**X1. Under EMA alpha=0.1, steady-state RMSE x 1e-3 over the 14 2-value integrands**",
+  "head": [
+   "Method",
+   "no blur",
+   "3x3 box",
+   "Gauss s=1"
+  ],
+  "rows": [
+   [
+    "HSN, R2 steps (standard, independent seeds)",
+    "50.3",
+    "16.9",
+    "14.2"
+   ],
+   [
+    "HSN, R2 steps, bit-reversed rank pairing",
+    "50.3",
+    "17.5",
+    "14.8"
+   ],
+   [
+    "White (PCG hash)",
+    "90.4",
+    "30.2",
+    "25.6"
+   ],
+   [
+    "FAST 128x128x32 texture",
+    "53.7",
+    "14.4",
+    "11.4"
+   ]
+  ]
+ },
+ {
+  "heading": "",
+  "title": "**X1. Every 2-value integrand, single frame: standard vs bit-reversed (x 1e-3)**",
+  "head": [
+   "Integrand",
+   "std, 3x3 box",
+   "bitrev, 3x3 box",
+   "std, Gauss s=1",
+   "bitrev, Gauss s=1",
+   "std, tile mean",
+   "bitrev, tile mean"
+  ],
+  "rows": [
+   [
+    "u*v",
+    "55.5",
+    "100.1",
+    "43.3",
+    "89.5",
+    "11.7",
+    "5.72"
+   ],
+   [
+    "0.5+0.5cos(2pi(u-v))",
+    "137.5",
+    "63.3",
+    "119.3",
+    "43.3",
+    "55.0",
+    "0.49"
+   ],
+   [
+    "0.5+0.5cos(2pi(u+v))",
+    "134.4",
+    "72.9",
+    "115.7",
+    "51.1",
+    "50.2",
+    "0.24"
+   ],
+   [
+    "gaussian bump s=0.2",
+    "61.1",
+    "123.9",
+    "47.4",
+    "112.6",
+    "16.2",
+    "0.14"
+   ],
+   [
+    "disc r=0.4",
+    "123.6",
+    "229.8",
+    "96.6",
+    "206.7",
+    "33.2",
+    "22.1"
+   ],
+   [
+    "quarter disc",
+    "120.3",
+    "162.5",
+    "98.4",
+    "142.5",
+    "35.7",
+    "18.0"
+   ],
+   [
+    "u+v<1 (anti-diagonal)",
+    "149.1",
+    "208.9",
+    "123.3",
+    "185.0",
+    "49.0",
+    "30.5"
+   ],
+   [
+    "u<v (diagonal)",
+    "150.6",
+    "208.0",
+    "125.1",
+    "184.4",
+    "51.6",
+    "28.4"
+   ],
+   [
+    "u+v<0.7",
+    "128.2",
+    "176.5",
+    "106.0",
+    "156.3",
+    "42.1",
+    "24.0"
+   ],
+   [
+    "box u<0.3,v<0.6",
+    "107.1",
+    "128.7",
+    "86.6",
+    "110.1",
+    "30.8",
+    "12.5"
+   ],
+   [
+    "oblique 0.37u+0.81v<0.5",
+    "124.7",
+    "281.1",
+    "98.2",
+    "257.0",
+    "32.0",
+    "15.2"
+   ],
+   [
+    "AO cosine hemisphere",
+    "96.7",
+    "144.1",
+    "79.5",
+    "128.3",
+    "31.3",
+    "16.2"
+   ],
+   [
+    "GGX lobe, (h.l)^8",
+    "67.4",
+    "114.0",
+    "51.2",
+    "100.5",
+    "13.3",
+    "2.85"
+   ],
+   [
+    "GGX lobe, light hit h.l>0.97",
+    "98.4",
+    "108.0",
+    "78.9",
+    "89.6",
+    "29.2",
+    "14.7"
+   ]
+  ]
+ }
+]

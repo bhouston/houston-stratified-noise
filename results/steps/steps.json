@@ -1,0 +1,46 @@
+{
+ "picks": {
+  "1": {
+   "name": "noble[0;1,1,1...]",
+   "steps": [
+    2654435769
+   ],
+   "J": 1.0,
+   "max_ratio": 1.0,
+   "worst": "pp/4",
+   "chi_max": 0.0,
+   "eligible": true
+  },
+  "2": {
+   "name": "pool: 1/plastic | 1/plastic^2",
+   "steps": [
+    3242174889,
+    2447445413
+   ],
+   "J": 1.0,
+   "max_ratio": 1.0,
+   "worst": "pp/4",
+   "chi_max": 0.05899483816964285,
+   "eligible": true
+  },
+  "4": {
+   "name": "random #18316",
+   "steps": [
+    3280154747,
+    2481977421,
+    1303403687,
+    2746543331
+   ],
+   "J": 0.9756551067873622,
+   "max_ratio": 1.1778561617564507,
+   "worst": "box8/gauss2",
+   "chi_max": 0.520046657986111,
+   "eligible": false
+  }
+ },
+ "any_eligible": {
+  "1": true,
+  "2": true,
+  "4": false
+ }
+}

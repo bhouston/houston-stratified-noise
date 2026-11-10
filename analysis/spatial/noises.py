@@ -32,7 +32,7 @@ def unit24(v):
     return (v >> U(8)).astype(np.float64) / 16777216.0
 
 
-# --- HSN / HHW (port of examples/jsm/tsl/utils/HierarchicalHashedWeyl.js, three.js PR #35429) ---
+# --- HSN (port of examples/jsm/tsl/utils/HierarchicalHashedWeyl.js, three.js PR #35429) ---
 
 def hash_uint(v):
     v = (v ^ (v >> U(16))) * U(0x21F0AAAD)

@@ -2,5 +2,6 @@ node_modules/
 dist/
 .venv/
 __pycache__/
-analysis/spatial/cache/
+analysis/*/cache/
 .DS_Store
+analysis/gpu/raw/

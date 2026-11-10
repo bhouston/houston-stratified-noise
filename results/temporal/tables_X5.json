@@ -1,0 +1,107 @@
+[
+ {
+  "heading": "",
+  "title": "**X5. HSN phase against a plain per-pixel hash phase, for the same temporal step(s).** Steady-state RMSE x 1e-3 under EMA alpha=0.1 plus a spatial filter (1-value: 10 integrands; 2-value: 14). A ratio below 1.00 means HSN's spatial hierarchy helps.",
+  "head": [
+   "Steps",
+   "HSN, 3x3",
+   "hash, 3x3",
+   "ratio",
+   "HSN, Gauss s=1",
+   "hash, Gauss s=1",
+   "ratio"
+  ],
+  "rows": [
+   [
+    "1-value, golden",
+    "8.87",
+    "11.8",
+    "0.75",
+    "6.89",
+    "10.0",
+    "0.69"
+   ],
+   [
+    "1-value, R2_STEPS[0]",
+    "20.2",
+    "17.7",
+    "1.14",
+    "17.2",
+    "15.0",
+    "1.14"
+   ],
+   [
+    "1-value, R2_STEPS[1]",
+    "10.7",
+    "16.4",
+    "0.65",
+    "7.71",
+    "13.9",
+    "0.55"
+   ],
+   [
+    "1-value, R4_STEPS[0]",
+    "13.4",
+    "21.5",
+    "0.62",
+    "9.60",
+    "18.2",
+    "0.53"
+   ],
+   [
+    "1-value, R4_STEPS[1]",
+    "10.6",
+    "13.4",
+    "0.79",
+    "8.43",
+    "11.4",
+    "0.74"
+   ],
+   [
+    "1-value, R4_STEPS[2]",
+    "10.9",
+    "12.1",
+    "0.90",
+    "8.93",
+    "10.2",
+    "0.87"
+   ],
+   [
+    "1-value, R4_STEPS[3]",
+    "11.9",
+    "16.6",
+    "0.71",
+    "8.68",
+    "14.1",
+    "0.62"
+   ],
+   [
+    "2-value, R2_STEPS",
+    "16.9",
+    "16.8",
+    "1.01",
+    "14.2",
+    "14.2",
+    "1.00"
+   ],
+   [
+    "2-value, R4_STEPS[0],[1] (PR VXGI)",
+    "17.0",
+    "18.5",
+    "0.92",
+    "14.2",
+    "15.7",
+    "0.91"
+   ],
+   [
+    "2-value, R4_STEPS[0],[3]",
+    "14.3",
+    "17.3",
+    "0.83",
+    "11.5",
+    "14.7",
+    "0.79"
+   ]
+  ]
+ }
+]
