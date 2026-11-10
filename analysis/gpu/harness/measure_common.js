@@ -1,5 +1,6 @@
 // Measurement harness shared by measure_vxgi.html / measure_ssr.html / measure_bake.html.
 import * as THREE from 'three/webgpu';
+import { tick } from './measure_frame_clock.js';
 
 const query = new URLSearchParams( location.search );
 globalThis.__NOISE = query.get( 'noise' ) ?? 'default';
@@ -36,15 +37,6 @@ function toBase64( typed ) {
 
 export const save = ( name, typed ) => window.__save( name, toBase64( typed ) );
 
-// Advance the renderer's node frame exactly like Animation.js does for one requestAnimationFrame tick.
-export function tick( renderer ) {
-
-	if ( renderer._animation._requestId !== null ) renderer._animation.stop(); // the harness, not requestAnimationFrame, advances frames
-	renderer._nodes.nodeFrame.update();
-	renderer.info.frame = renderer._nodes.nodeFrame.frameId;
-
-}
-
 export const gpuDone = ( renderer ) => renderer.backend.device.queue.onSubmittedWorkDone();
 
 /**
@@ -64,6 +56,9 @@ export async function capture( renderer, target, renderFrame, { name, warmup, fr
 		if ( i % 4 === 3 ) await gpuDone( renderer );
 
 	}
+
+	await gpuDone( renderer );
+	const measuredStartFrameId = renderer._nodes.nodeFrame.frameId;
 
 	const sum = new Float64Array( n * 3 ), sumSq = new Float64Array( n * 3 );
 	const previous = new Float32Array( n * 3 ), current = new Float32Array( n * 3 );
@@ -105,10 +100,13 @@ export async function capture( renderer, target, renderFrame, { name, warmup, fr
 
 	}
 
+	const frameIndexAdvance = renderer._nodes.nodeFrame.frameId - measuredStartFrameId;
+	if ( frameIndexAdvance !== frames ) throw new Error( `Frame clock drift: expected ${ frames } advances, got ${ frameIndexAdvance }` );
+
 	await save( name + '_mean.f32', mean );
 	await save( name + '_last.f32', current );
 
-	return { name, width: w, height: h, warmup, frames, temporalVariance: variance / ( n * 3 ), flickerMSE: flicker / ( n * 3 * Math.max( 1, frames - 1 ) ), nonFinite, ms: performance.now() - t0, frameId: renderer._nodes.nodeFrame.frameId, noise: globalThis.__NOISE, fastLoadMs: globalThis.__FAST_LOAD_MS ?? null, vcGenerateMs: globalThis.__VC_MS ?? null, vcTextureBytes: globalThis.__VC_BYTES ?? null };
+	return { frameClock: 'manual-v1', measuredStartFrameId, frameIndexAdvance, name, width: w, height: h, warmup, frames, temporalVariance: variance / ( n * 3 ), flickerMSE: flicker / ( n * 3 * Math.max( 1, frames - 1 ) ), nonFinite, ms: performance.now() - t0, frameId: renderer._nodes.nodeFrame.frameId, noise: globalThis.__NOISE, fastLoadMs: globalThis.__FAST_LOAD_MS ?? null, vcGenerateMs: globalThis.__VC_MS ?? null, vcTextureBytes: globalThis.__VC_BYTES ?? null };
 
 }
 
@@ -118,6 +116,7 @@ export async function throughput( renderer, renderFrame, seconds = 5 ) {
 	for ( let i = 0; i < 60; i ++ ) { tick( renderer ); renderFrame(); if ( i % 4 === 3 ) await gpuDone( renderer ); }
 	await gpuDone( renderer );
 
+	const measuredStartFrameId = renderer._nodes.nodeFrame.frameId;
 	const t0 = performance.now();
 	let frames = 0;
 
@@ -129,8 +128,11 @@ export async function throughput( renderer, renderFrame, seconds = 5 ) {
 	}
 
 	await gpuDone( renderer );
-	return { frames, seconds: ( performance.now() - t0 ) / 1000, fps: frames / ( ( performance.now() - t0 ) / 1000 ), vcGenerateMs: globalThis.__VC_MS ?? null };
+	const elapsedSeconds = ( performance.now() - t0 ) / 1000;
+	const frameIndexAdvance = renderer._nodes.nodeFrame.frameId - measuredStartFrameId;
+	if ( frameIndexAdvance !== frames ) throw new Error( `Frame clock drift: expected ${ frames } advances, got ${ frameIndexAdvance }` );
+	return { frameClock: 'manual-v1', measuredStartFrameId, frameIndexAdvance, frames, seconds: elapsedSeconds, fps: frames / elapsedSeconds, vcGenerateMs: globalThis.__VC_MS ?? null };
 
 }
 
-export { THREE };
+export { THREE, tick };

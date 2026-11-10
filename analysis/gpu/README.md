@@ -34,9 +34,9 @@ This runs `figure.py` and `figure_variants.py` from the committed metrics JSON a
    - **head**: `34137c3756fa`, the head of mrdoob/three.js#35429
    - **bake**: `eb7187278b74` on `bhouston/three.js`, branch `ign-adoption`. The light map baker (`examples/jsm/lighting/vxgi/VXGIIrradiance.js`) was removed upstream, so it exists at neither the upstream base nor head.
 2. Apply the patches and copy the harness files:
-   - base: `git apply patches/base.diff`; copy `harness/measure_common.js`, `measure_vxgi.html`, `measure_ssr.html` to `examples/` and `harness/MeasureWhiteNoise.js` to `examples/jsm/tsl/utils/`
-   - head: `git apply patches/head.diff`; copy the same three files to `examples/` and `MeasureWhiteNoise.js`, `MeasureVariants.js`, `MeasureVoidCluster.js`, `MeasureAnalyticR4.js`, `MeasureRNoiseR4.js`, `FASTNoise.js` to `examples/jsm/tsl/utils/`. Variant H also needs the FAST atlas: copy `textures/fast/gauss1-ema01-spatio-temporal.png` (with its `.txt` and `LICENSE.txt`) from this repository to `examples/textures/noises/fast/`. The harness used the same file, byte for byte, from mrdoob/three.js#35244; it is not committed a second time here. `harness/FASTNoise.js` is that pull request's sampler, unchanged
-   - bake: `git apply patches/bake.diff`; copy `measure_common.js` and `measure_bake.html` to `examples/` and `MeasureWhiteNoise.js` to `examples/jsm/tsl/utils/`
+   - base: `git apply patches/base.diff`; copy `harness/measure_common.js`, `measure_frame_clock.js`, `measure_vxgi.html`, `measure_ssr.html` to `examples/` and `harness/MeasureWhiteNoise.js` to `examples/jsm/tsl/utils/`
+   - head: `git apply patches/head.diff`; copy the same four files to `examples/` and `MeasureWhiteNoise.js`, `MeasureVariants.js`, `MeasureVoidCluster.js`, `MeasureAnalyticR4.js`, `MeasureRNoiseR4.js`, `FASTNoise.js` to `examples/jsm/tsl/utils/`. Variant H also needs the FAST atlas: copy `textures/fast/gauss1-ema01-spatio-temporal.png` (with its `.txt` and `LICENSE.txt`) from this repository to `examples/textures/noises/fast/`. The harness used the same file, byte for byte, from mrdoob/three.js#35244; it is not committed a second time here. `harness/FASTNoise.js` is that pull request's sampler, unchanged
+   - bake: `git apply patches/bake.diff`; copy `measure_common.js`, `measure_frame_clock.js` and `measure_bake.html` to `examples/` and `MeasureWhiteNoise.js` to `examples/jsm/tsl/utils/`
 
    The pages import `src/` directly; nothing under `build/` is generated.
 3. Serve each checkout from its root: `python3 -m http.server 8131` (base), `8132` (head), `8133` (bake).
@@ -73,3 +73,35 @@ This runs `figure.py` and `figure_variants.py` from the committed metrics JSON a
 Throughput is measured as required for sustained rendering: vsync and the frame-rate limit disabled, 60 warm-up frames, then 5 seconds counting GPU-completed frames (`queue.onSubmittedWorkDone`), samplers run sequentially, no per-frame timing.
 
 The method, the tables and their limits are on the website's Results page (source: `site/src/gpu-readings.json`). In short: the bias metric uses white noise through the same TRAA and denoiser as its reference, which may favour the plain hash in the bias ranking; there is one static scene and camera per effect and one GPU; fps was measured on a GPU shared with other work.
+
+## Frame clock correction
+
+The measurement pages now own the renderer's frame clock. On the first `tick()`,
+they stop any pending animation and disable the renderer's internal animation
+`start()` for that measurement renderer's lifetime. Each tick then advances
+`nodeFrame` exactly once. This also covers the bake page's manual ticks.
+
+Previously, `tick()` stopped the animation, but `render()` or `compute()` restarted
+it, immediately incrementing the noise index and scheduling further index updates
+between asynchronous readbacks. Consecutive captured frames therefore did not
+necessarily consume consecutive sample indices; the sequence depended on timing.
+
+New captures record `frameClock: "manual-v1"`, `measuredStartFrameId`, and
+`frameIndexAdvance`, and fail if the measured interval does not advance exactly
+once per captured frame. Throughput records identify the corrected clock and assert the same relationship between completed frames and index advances.
+The regression test exercises a renderer that restarts its clock during rendering
+and queues background updates; it runs in `pnpm test` without a GPU.
+
+The committed historical metrics and figures are unchanged. They predate this
+correction and need fresh GPU captures before being described as measurements
+with consecutive noise indices. Keep corrected results separate from historical
+runs so the driver's existing-file skip behavior cannot mix the two protocols:
+
+```sh
+GPU_RAW=analysis/gpu/raw-manual-v1 node analysis/gpu/run.mjs analysis/gpu/jobs-realtime.json
+GPU_RAW=analysis/gpu/raw-manual-v1 node analysis/gpu/run.mjs analysis/gpu/jobs-fps.json
+```
+
+Use the same `GPU_RAW` when analyzing these captures. The frame-clock helper
+uses Three.js's internal animation API, like the existing harness, and should be
+checked when updating the pinned Three.js revisions.
