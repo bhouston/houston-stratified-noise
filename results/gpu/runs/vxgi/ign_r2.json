@@ -1,0 +1,33 @@
+{
+	"job": {
+		"tree": "head",
+		"dir": "vxgi",
+		"page": "measure_vxgi.html",
+		"query": "noise=ign",
+		"name": "ign_r2",
+		"warmup": 233,
+		"frames": 256
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"name": "ign_r2",
+		"width": 960,
+		"height": 720,
+		"warmup": 233,
+		"frames": 256,
+		"temporalVariance": 0.00004781529673454818,
+		"flickerMSE": 0.000014695675774795174,
+		"nonFinite": 0,
+		"ms": 7604.0999999940395,
+		"frameId": 1408,
+		"noise": "ign"
+	}
+}

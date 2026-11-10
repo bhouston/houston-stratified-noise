@@ -1,0 +1,164 @@
+[
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=e",
+  "name": "e_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=e",
+  "name": "e_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=e",
+  "name": "e_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=er2",
+  "name": "er2_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=er2",
+  "name": "er2_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=er2",
+  "name": "er2_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=f",
+  "name": "f_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=f",
+  "name": "f_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=f",
+  "name": "f_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=fr2",
+  "name": "fr2_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=fr2",
+  "name": "fr2_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=fr2",
+  "name": "fr2_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=e",
+  "name": "e_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=e",
+  "name": "e_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=e",
+  "name": "e_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=f",
+  "name": "f_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=f",
+  "name": "f_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=f",
+  "name": "f_r2",
+  "warmup": 233,
+  "frames": 256
+ }
+]

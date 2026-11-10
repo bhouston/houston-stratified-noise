@@ -1,0 +1,35 @@
+{
+	"job": {
+		"tree": "head",
+		"dir": "vxgi",
+		"page": "measure_vxgi.html",
+		"query": "noise=er2",
+		"name": "er2_r1",
+		"warmup": 171,
+		"frames": 256
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"name": "er2_r1",
+		"width": 960,
+		"height": 720,
+		"warmup": 171,
+		"frames": 256,
+		"temporalVariance": 0.00007806437620030899,
+		"flickerMSE": 0.000026698758661665195,
+		"nonFinite": 0,
+		"ms": 9771.699999988079,
+		"frameId": 1401,
+		"noise": "er2",
+		"vcGenerateMs": null,
+		"vcTextureBytes": null
+	}
+}

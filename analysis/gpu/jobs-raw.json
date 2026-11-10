@@ -1,0 +1,38 @@
+[
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=white&raw=1&seed=11",
+  "name": "rawwhite_s11",
+  "warmup": 64,
+  "frames": 2048
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=white&raw=1&seed=12",
+  "name": "rawwhite_s12",
+  "warmup": 64,
+  "frames": 2048
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=white&raw=1&seed=11",
+  "name": "rawwhite_s11",
+  "warmup": 64,
+  "frames": 2048
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=white&raw=1&seed=12",
+  "name": "rawwhite_s12",
+  "warmup": 64,
+  "frames": 2048
+ }
+]

@@ -1,0 +1,53 @@
+diff --git a/examples/jsm/lighting/vxgi/VXGINode.js b/examples/jsm/lighting/vxgi/VXGINode.js
+index 8310fad55f15..89a6cbc56112 100644
+--- a/examples/jsm/lighting/vxgi/VXGINode.js
++++ b/examples/jsm/lighting/vxgi/VXGINode.js
+@@ -5,6 +5,8 @@ import { VXGIVolume } from './VXGIVolume.js';
+ import { createConeTracer, gather, intersectVolume, sampleDirectional } from './VXGIConeTracer.js';
+ import { bindHierarchicalHashedWeyl } from '../../tsl/utils/HierarchicalHashedWeyl.js';
+ 
++import { measureBindNoise } from '../../tsl/utils/MeasureVariants.js'; // MEASURE
++
+ const _quadMesh = /*@__PURE__*/ new QuadMesh();
+ const _size = /*@__PURE__*/ new Vector2();
+ 
+@@ -470,7 +472,7 @@ class VXGINode extends Node {
+ 
+ 			// Independently seeded dimensions for cone rotation and elevation.
+ 
+-			const noise = bindHierarchicalHashedWeyl( this._resolution, 29 )( uvNode, this._frame ).toConst();
++			const noise = measureBindNoise( this._resolution, 29, 2 )( uvNode, this._frame ).toConst();
+ 			const rotationNoise = noise.x;
+ 			const elevationNoise = noise.y;
+ 
+diff --git a/examples/jsm/tsl/display/SSRNode.js b/examples/jsm/tsl/display/SSRNode.js
+index 5a9b595db284..93ae412bbc9e 100644
+--- a/examples/jsm/tsl/display/SSRNode.js
++++ b/examples/jsm/tsl/display/SSRNode.js
+@@ -5,6 +5,8 @@ import { ENV_RAY_LENGTH, getSpecularDominantFactor, ggxReflectionSample } from '
+ import { boxBlur } from './boxBlur.js';
+ import ImportanceSampledEnvironment from './ImportanceSampledEnvironment.js';
+ 
++import { measureBindNoise } from '../utils/MeasureVariants.js'; // MEASURE
++
+ const _quadMesh = /*@__PURE__*/ new QuadMesh();
+ const _size = /*@__PURE__*/ new Vector2();
+ let _rendererState;
+@@ -853,7 +855,7 @@ class SSRNode extends Node {
+ 
+ 		const sampleDepth = ( uv ) => projectionDepth( this.depthNode.sample( uv ).r, this._cameraNear, this._cameraFar );
+ 
+-		const sampleMarchNoise = this.stochastic === true ? bindHierarchicalHashedWeyl( this._resolution, 47 ) : null;
++		const sampleMarchNoise = this.stochastic === true ? measureBindNoise( this._resolution, 47, 4 ) : null;
+ 
+ 		const computeScreenBorderFactor = Fn( ( [ uvCoord, borderWidth ] ) => {
+ 
+@@ -947,7 +949,7 @@ class SSRNode extends Node {
+ 
+ 					if ( this.envImportanceSampling ) {
+ 
+-						const Xi2 = bindHierarchicalHashedWeyl( this._resolution, 59 )( uvPos, this._noiseIndex );
++						const Xi2 = measureBindNoise( this._resolution, 59, 4 )( uvPos, this._noiseIndex );
+ 
+ 						envColor.assign( this._importanceEnvironment.sampleEnvironmentMIS( {
+ 							cameraWorldMatrix: this._cameraWorldMatrix,

@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>measure bake</title></head>
+<body style="margin:0">
+<script type="importmap">{ "imports": { "three": "../src/Three.WebGPU.js", "three/webgpu": "../src/Three.WebGPU.js", "three/tsl": "../src/Three.TSL.js", "three/addons/": "./jsm/" } }</script>
+<script type="module">
+
+	// Scene and bake settings copied from examples/webgpu_lightmap_baking.html on branch ign-adoption
+	// (VXGI algorithm, 1024 light map, 3 cones, 64 samples).
+	import { THREE, adapterInfo, save, tick, gpuDone } from './measure_common.js';
+	const { uniform } = await import( 'three/tsl' );
+	globalThis.__SAMPLE_OFFSET = uniform( 0 );
+	const { LightMapper } = await import( 'three/addons/lighting/LightMapper.js' );
+	const { VXGIVolume } = await import( 'three/addons/lighting/vxgi/VXGIVolume.js' );
+	const { vxgiIrradiance } = await import( 'three/addons/lighting/vxgi/VXGIIrradiance.js' );
+	const { unwrapUVs } = await import( 'three/addons/utils/unwrapUVs.js' );
+
+	const SIZE = 1024;
+
+	const camera = new THREE.PerspectiveCamera( 50, 4 / 3, 0.1, 100 );
+	camera.position.set( 0, 2.5, 8 );
+	camera.lookAt( 0, 2.5, 0 );
+
+	const scene = new THREE.Scene();
+	scene.background = new THREE.Color( 0x111111 );
+
+	const wallMaterial = new THREE.MeshStandardMaterial( { color: 0xcccccc } );
+	const add = ( mesh, f = () => {} ) => { f( mesh ); mesh.receiveShadow = true; scene.add( mesh ); return mesh; };
+	add( new THREE.Mesh( new THREE.PlaneGeometry( 6, 6 ), wallMaterial ), m => { m.rotation.x = - Math.PI / 2; } );
+	add( new THREE.Mesh( new THREE.PlaneGeometry( 6, 6 ), wallMaterial ), m => { m.rotation.x = Math.PI / 2; m.position.y = 5; } );
+	add( new THREE.Mesh( new THREE.PlaneGeometry( 6, 5 ), wallMaterial ), m => { m.position.set( 0, 2.5, - 3 ); } );
+	add( new THREE.Mesh( new THREE.PlaneGeometry( 6, 5 ), wallMaterial ), m => { m.rotation.y = Math.PI; m.position.set( 0, 2.5, 3 ); } );
+	add( new THREE.Mesh( new THREE.PlaneGeometry( 6, 5 ), new THREE.MeshStandardMaterial( { color: 0xff0000 } ) ), m => { m.rotation.y = Math.PI / 2; m.position.set( - 3, 2.5, 0 ); } );
+	add( new THREE.Mesh( new THREE.PlaneGeometry( 6, 5 ), new THREE.MeshStandardMaterial( { color: 0x00ff00 } ) ), m => { m.rotation.y = - Math.PI / 2; m.position.set( 3, 2.5, 0 ); } );
+	add( new THREE.Mesh( new THREE.BoxGeometry( 1.2, 2.5, 1.2 ), new THREE.MeshStandardMaterial( { color: 0xeeeeee } ) ), m => { m.position.set( - 0.8, 1.25, - 0.8 ); m.rotation.y = Math.PI / 8; m.castShadow = true; } );
+	add( new THREE.Mesh( new THREE.SphereGeometry( 0.65, 32, 32 ), new THREE.MeshStandardMaterial( { color: 0x0044ff, roughness: 0.15 } ) ), m => { m.position.set( 1, 0.65, 0.5 ); m.castShadow = true; } );
+
+	const light = new THREE.PointLight( 0xffffff, 40 );
+	light.position.set( 0, 4.5, 0 );
+	light.castShadow = true;
+	light.shadow.mapSize.setScalar( 256 );
+	light.shadow.radius = 10;
+	light.shadow.normalBias = - 0.02;
+	light.shadow.autoUpdate = false;
+	scene.add( light );
+
+	const renderer = new THREE.WebGPURenderer( { antialias: true } );
+	renderer.setPixelRatio( 1 );
+	renderer.setSize( 640, 480 );
+	renderer.shadowMap.enabled = true;
+	document.body.appendChild( renderer.domElement );
+	await renderer.init();
+
+	const meshes = scene.children.filter( ( object ) => object.isMesh );
+	unwrapUVs( scene, { resolution: SIZE, padding: 3 } );
+
+	tick( renderer );
+	renderer.render( scene, camera ); // prepares shadows, as in the example
+	tick( renderer );
+
+	const volume = new VXGIVolume();
+	volume.update( renderer, scene );
+
+	const lightMapper = new LightMapper( renderer, SIZE, vxgiIrradiance( volume, { coneCount: 3 } ) );
+	lightMapper.addObjects( meshes );
+
+	const half = THREE.DataUtils.fromHalfFloat;
+
+	async function read( target, channels ) {
+
+		const raw = await renderer.readRenderTargetPixelsAsync( target, 0, 0, SIZE, SIZE );
+		const isHalf = raw instanceof Uint16Array;
+		const out = new Float32Array( SIZE * SIZE * channels.length );
+		for ( let i = 0, j = 0; i < SIZE * SIZE * 4; i += 4 ) for ( const c of channels ) out[ j ++ ] = isHalf ? half( raw[ i + c ] ) : raw[ i + c ];
+		return out;
+
+	}
+
+	// Bakes `samples` samples starting at each sample offset. average=false: saves one light map per offset
+	// (<name>_r<i>.f32). average=true: saves the mean over all offsets plus the means of the two halves.
+	window.__bake = async ( { name, offsets, samples = 64, average = false } ) => {
+
+		const t0 = performance.now();
+		const n = SIZE * SIZE * 3;
+		const sums = [ new Float64Array( n ), new Float64Array( n ) ];
+
+		for ( let k = 0; k < offsets.length; k ++ ) {
+
+			globalThis.__SAMPLE_OFFSET.value = offsets[ k ];
+			lightMapper.reset();
+			lightMapper.update( samples );
+			await gpuDone( renderer );
+			const map = await read( lightMapper._renderTarget, [ 0, 1, 2 ] );
+
+			if ( k === 0 ) await save( name + '_coverage.f32', await read( lightMapper._accumulation, [ 3 ] ) );
+
+			if ( average ) { const s = sums[ k < offsets.length / 2 ? 0 : 1 ]; for ( let i = 0; i < n; i ++ ) s[ i ] += map[ i ]; }
+			else await save( `${ name }_r${ k }.f32`, map );
+
+		}
+
+		if ( average ) {
+
+			const m = offsets.length / 2;
+			const a = new Float32Array( n ), b = new Float32Array( n ), mean = new Float32Array( n );
+			for ( let i = 0; i < n; i ++ ) { a[ i ] = sums[ 0 ][ i ] / m; b[ i ] = sums[ 1 ][ i ] / m; mean[ i ] = ( a[ i ] + b[ i ] ) / 2; }
+			await save( name + '_mean.f32', mean );
+			await save( name + '_halfA.f32', a );
+			await save( name + '_halfB.f32', b );
+
+		}
+
+		return { name, size: SIZE, samples, offsets: offsets.length, average, noise: globalThis.__NOISE, ms: performance.now() - t0 };
+
+	};
+
+	window.__adapter = await adapterInfo();
+	window.__ready = true;
+
+</script>
+</body></html>

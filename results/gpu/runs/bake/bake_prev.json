@@ -1,0 +1,37 @@
+{
+	"job": {
+		"tree": "bake",
+		"dir": "bake",
+		"page": "measure_bake.html",
+		"query": "noise=prev",
+		"name": "bake_prev",
+		"call": "__bake",
+		"options": {
+			"offsets": [
+				0,
+				64,
+				128,
+				192
+			],
+			"samples": 64
+		}
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"name": "bake_prev",
+		"size": 1024,
+		"samples": 64,
+		"offsets": 4,
+		"average": false,
+		"noise": "prev",
+		"ms": 3041.4000000059605
+	}
+}

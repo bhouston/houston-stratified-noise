@@ -1,0 +1,33 @@
+{
+	"job": {
+		"tree": "head",
+		"dir": "ssr_only",
+		"page": "measure_ssr.html",
+		"query": "noise=white&seed=2&output=ssr",
+		"name": "white_head_s2",
+		"warmup": 128,
+		"frames": 1024
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"name": "white_head_s2",
+		"width": 960,
+		"height": 720,
+		"warmup": 128,
+		"frames": 1024,
+		"temporalVariance": 0.0000043953069825436836,
+		"flickerMSE": 0.000002138408951047213,
+		"nonFinite": 0,
+		"ms": 32605.5,
+		"frameId": 4157,
+		"noise": "white"
+	}
+}

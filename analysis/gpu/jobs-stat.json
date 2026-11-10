@@ -1,0 +1,4 @@
+[ { "tree": "head", "dir": "stationarity", "page": "measure_vxgi.html", "query": "noise=default", "name": "a128", "warmup": 128, "frames": 256 },
+  { "tree": "head", "dir": "stationarity", "page": "measure_vxgi.html", "query": "noise=default", "name": "b128", "warmup": 128, "frames": 256 },
+  { "tree": "head", "dir": "stationarity", "page": "measure_vxgi.html", "query": "noise=default", "name": "c640", "warmup": 640, "frames": 256 },
+  { "tree": "head", "dir": "stationarity", "page": "measure_vxgi.html", "query": "noise=default", "name": "d1152", "warmup": 1152, "frames": 256 } ]

@@ -1,0 +1,33 @@
+{
+	"job": {
+		"tree": "head",
+		"dir": "ssr",
+		"page": "measure_ssr.html",
+		"query": "noise=default",
+		"name": "hhw_r0",
+		"warmup": 128,
+		"frames": 256
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"name": "hhw_r0",
+		"width": 960,
+		"height": 720,
+		"warmup": 128,
+		"frames": 256,
+		"temporalVariance": 0.000008451211392066072,
+		"flickerMSE": 0.000006045357500148921,
+		"nonFinite": 0,
+		"ms": 8515.800000011921,
+		"frameId": 1237,
+		"noise": "default"
+	}
+}

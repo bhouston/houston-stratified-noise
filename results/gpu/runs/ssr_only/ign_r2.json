@@ -1,0 +1,33 @@
+{
+	"job": {
+		"tree": "head",
+		"dir": "ssr_only",
+		"page": "measure_ssr.html",
+		"query": "noise=ign&output=ssr",
+		"name": "ign_r2",
+		"warmup": 233,
+		"frames": 256
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"name": "ign_r2",
+		"width": 960,
+		"height": 720,
+		"warmup": 233,
+		"frames": 256,
+		"temporalVariance": 0.000004931487477731841,
+		"flickerMSE": 0.0000031483134801422213,
+		"nonFinite": 0,
+		"ms": 7757.9000000059605,
+		"frameId": 1413,
+		"noise": "ign"
+	}
+}

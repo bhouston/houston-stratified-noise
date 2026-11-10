@@ -1,0 +1,33 @@
+{
+	"job": {
+		"tree": "base",
+		"dir": "vxgi",
+		"page": "measure_vxgi.html",
+		"query": "noise=white&seed=1",
+		"name": "white_base_s1",
+		"warmup": 128,
+		"frames": 1024
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"name": "white_base_s1",
+		"width": 960,
+		"height": 720,
+		"warmup": 128,
+		"frames": 1024,
+		"temporalVariance": 0.00010746728548041614,
+		"flickerMSE": 0.000026739864311260372,
+		"nonFinite": 0,
+		"ms": 24054.59999999404,
+		"frameId": 3680,
+		"noise": "white"
+	}
+}

@@ -1,0 +1,56 @@
+[
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=g",
+  "name": "g_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=g",
+  "name": "g_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=g",
+  "name": "g_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=g",
+  "name": "g_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=g",
+  "name": "g_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=g",
+  "name": "g_r2",
+  "warmup": 233,
+  "frames": 256
+ }
+]

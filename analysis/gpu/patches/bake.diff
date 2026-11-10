@@ -1,0 +1,51 @@
+diff --git a/examples/jsm/lighting/vxgi/VXGIIrradiance.js b/examples/jsm/lighting/vxgi/VXGIIrradiance.js
+index aa89c4abf13e..f7be3c26ff19 100644
+--- a/examples/jsm/lighting/vxgi/VXGIIrradiance.js
++++ b/examples/jsm/lighting/vxgi/VXGIIrradiance.js
+@@ -1,4 +1,5 @@
+-import { Fn, PI, float, screenCoordinate } from 'three/tsl';
++import { Fn, PI, float, screenCoordinate, interleavedGradientNoise, uniform, vec2 } from 'three/tsl';
++import { whiteNoise4 } from '../../tsl/utils/MeasureWhiteNoise.js'; // MEASURE
+ import { R2_STEPS, houstonStratifiedNoise } from '../../tsl/utils/HoustonStratifiedNoise.js';
+ import { createConeTracer, gather } from './VXGIConeTracer.js';
+ 
+@@ -27,8 +28,37 @@ function vxgiIrradiance( volume, { coneCount = 8 } = {} ) {
+ 
+ 		// stratified noise offsets of the cone set, see VXGINode
+ 
+-		const elevation = houstonStratifiedNoise( screenCoordinate, sample, 2, R2_STEPS[ 1 ] ).toConst();
+-		const rotation = houstonStratifiedNoise( screenCoordinate, sample, 1, R2_STEPS[ 0 ] ).toConst();
++		// MEASURE: ?noise=prev|shared|white selects the sampler, default is this branch's code (HSN, R2 steps)
++
++		const mode = globalThis.__NOISE;
++		const index = sample.add( globalThis.__SAMPLE_OFFSET ??= uniform( 0 ) ).toConst();
++		let elevation, rotation;
++
++		if ( mode === 'prev' ) {
++
++			// code at the branch's merge base a08da1e9ffed (before HSN)
++			const shift = screenCoordinate.add( index.mul( 5.588238 ) ).toConst();
++			elevation = interleavedGradientNoise( shift.add( vec2( 5.588238, 3.14159 ) ) ).toConst();
++			rotation = interleavedGradientNoise( shift ).toConst();
++
++		} else if ( mode === 'shared' ) {
++
++			// HSN with the default golden-ratio step in both dimensions (as in commit c6428b7860a5)
++			elevation = houstonStratifiedNoise( screenCoordinate, index, 2 ).toConst();
++			rotation = houstonStratifiedNoise( screenCoordinate, index, 1 ).toConst();
++
++		} else if ( mode === 'white' ) {
++
++			const white = whiteNoise4( screenCoordinate.floor(), index, 0 ).toConst();
++			elevation = white.y;
++			rotation = white.x;
++
++		} else {
++
++			elevation = houstonStratifiedNoise( screenCoordinate, index, 2, R2_STEPS[ 1 ] ).toConst();
++			rotation = houstonStratifiedNoise( screenCoordinate, index, 1, R2_STEPS[ 0 ] ).toConst();
++
++		}
+ 
+ 		const origin = position.add( normal.mul( volume.voxelSizeNode.mul( 1.5 ) ) ).toConst();
+ 

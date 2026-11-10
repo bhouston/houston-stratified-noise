@@ -1,0 +1,33 @@
+{
+	"job": {
+		"tree": "base",
+		"dir": "ssr_only",
+		"page": "measure_ssr.html",
+		"query": "noise=white&seed=3&output=ssr",
+		"name": "white_base_s3",
+		"warmup": 128,
+		"frames": 1024
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"name": "white_base_s3",
+		"width": 960,
+		"height": 720,
+		"warmup": 128,
+		"frames": 1024,
+		"temporalVariance": 0.000004437178003992001,
+		"flickerMSE": 0.0000021391947131293457,
+		"nonFinite": 0,
+		"ms": 31584.80000001192,
+		"frameId": 4098,
+		"noise": "white"
+	}
+}

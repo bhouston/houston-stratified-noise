@@ -1,0 +1,25 @@
+{
+	"job": {
+		"tree": "head",
+		"dir": "fps_vxgi",
+		"page": "measure_vxgi.html",
+		"query": "noise=default&w=1920&h=1080",
+		"name": "hsnctl3_r0",
+		"fps": 5
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"frames": 276,
+		"seconds": 5.001600000023842,
+		"fps": 55.18123837875388,
+		"vcGenerateMs": null
+	}
+}

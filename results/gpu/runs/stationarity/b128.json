@@ -1,0 +1,33 @@
+{
+	"job": {
+		"tree": "head",
+		"dir": "stationarity",
+		"page": "measure_vxgi.html",
+		"query": "noise=default",
+		"name": "b128",
+		"warmup": 128,
+		"frames": 256
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"name": "b128",
+		"width": 960,
+		"height": 720,
+		"warmup": 128,
+		"frames": 256,
+		"temporalVariance": 0.000046808005089966246,
+		"flickerMSE": 0.000016806494567892287,
+		"nonFinite": 0,
+		"ms": 5315.700000017881,
+		"frameId": 1065,
+		"noise": "default"
+	}
+}

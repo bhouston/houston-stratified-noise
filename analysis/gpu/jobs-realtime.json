@@ -1,0 +1,461 @@
+[
+ {
+  "tree": "base",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=white&seed=1",
+  "name": "white_base_s1",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=white&seed=2",
+  "name": "white_head_s2",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "base",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=white&seed=3",
+  "name": "white_base_s3",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=white&seed=4",
+  "name": "white_head_s4",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "base",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default",
+  "name": "base_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "base",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default",
+  "name": "base_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "base",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default",
+  "name": "base_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default",
+  "name": "hhw_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default",
+  "name": "hhw_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default",
+  "name": "hhw_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hash",
+  "name": "hash_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hash",
+  "name": "hash_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hash",
+  "name": "hash_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=ign",
+  "name": "ign_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=ign",
+  "name": "ign_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=ign",
+  "name": "ign_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hhwr2",
+  "name": "hhwr2_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hhwr2",
+  "name": "hhwr2_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hhwr2",
+  "name": "hhwr2_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "base",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=white&seed=1",
+  "name": "white_base_s1",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=white&seed=2",
+  "name": "white_head_s2",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "base",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=white&seed=3",
+  "name": "white_base_s3",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=white&seed=4",
+  "name": "white_head_s4",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "base",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default",
+  "name": "base_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "base",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default",
+  "name": "base_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "base",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default",
+  "name": "base_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default",
+  "name": "hhw_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default",
+  "name": "hhw_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default",
+  "name": "hhw_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=hash",
+  "name": "hash_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=hash",
+  "name": "hash_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=hash",
+  "name": "hash_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=ign",
+  "name": "ign_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=ign",
+  "name": "ign_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=ign",
+  "name": "ign_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "base",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=white&seed=1&output=ssr",
+  "name": "white_base_s1",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=white&seed=2&output=ssr",
+  "name": "white_head_s2",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "base",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=white&seed=3&output=ssr",
+  "name": "white_base_s3",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=white&seed=4&output=ssr",
+  "name": "white_head_s4",
+  "warmup": 128,
+  "frames": 1024
+ },
+ {
+  "tree": "base",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=default&output=ssr",
+  "name": "base_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "base",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=default&output=ssr",
+  "name": "base_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "base",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=default&output=ssr",
+  "name": "base_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=default&output=ssr",
+  "name": "hhw_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=default&output=ssr",
+  "name": "hhw_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=default&output=ssr",
+  "name": "hhw_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=hash&output=ssr",
+  "name": "hash_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=hash&output=ssr",
+  "name": "hash_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=hash&output=ssr",
+  "name": "hash_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=ign&output=ssr",
+  "name": "ign_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=ign&output=ssr",
+  "name": "ign_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=ign&output=ssr",
+  "name": "ign_r2",
+  "warmup": 233,
+  "frames": 256
+ }
+]

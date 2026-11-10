@@ -1,0 +1,218 @@
+[
+ {
+  "tree": "base",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "base_r0",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "hhw_r0",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hash&w=1920&h=1080",
+  "name": "hash_r0",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=ign&w=1920&h=1080",
+  "name": "ign_r0",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hhwr2&w=1920&h=1080",
+  "name": "hhwr2_r0",
+  "fps": 5
+ },
+ {
+  "tree": "base",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "base_r1",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "hhw_r1",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hash&w=1920&h=1080",
+  "name": "hash_r1",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=ign&w=1920&h=1080",
+  "name": "ign_r1",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hhwr2&w=1920&h=1080",
+  "name": "hhwr2_r1",
+  "fps": 5
+ },
+ {
+  "tree": "base",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "base_r2",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "hhw_r2",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hash&w=1920&h=1080",
+  "name": "hash_r2",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=ign&w=1920&h=1080",
+  "name": "ign_r2",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=hhwr2&w=1920&h=1080",
+  "name": "hhwr2_r2",
+  "fps": 5
+ },
+ {
+  "tree": "base",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "base_r0",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "hhw_r0",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=hash&w=1920&h=1080",
+  "name": "hash_r0",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=ign&w=1920&h=1080",
+  "name": "ign_r0",
+  "fps": 5
+ },
+ {
+  "tree": "base",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "base_r1",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "hhw_r1",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=hash&w=1920&h=1080",
+  "name": "hash_r1",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=ign&w=1920&h=1080",
+  "name": "ign_r1",
+  "fps": 5
+ },
+ {
+  "tree": "base",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "base_r2",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=default&w=1920&h=1080",
+  "name": "hhw_r2",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=hash&w=1920&h=1080",
+  "name": "hash_r2",
+  "fps": 5
+ },
+ {
+  "tree": "head",
+  "dir": "fps_ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=ign&w=1920&h=1080",
+  "name": "ign_r2",
+  "fps": 5
+ }
+]

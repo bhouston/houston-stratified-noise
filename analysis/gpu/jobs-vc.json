@@ -1,0 +1,83 @@
+[
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=vc",
+  "name": "vc_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=vc",
+  "name": "vc_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "vxgi",
+  "page": "measure_vxgi.html",
+  "query": "noise=vc",
+  "name": "vc_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=vc",
+  "name": "vc_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=vc",
+  "name": "vc_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr",
+  "page": "measure_ssr.html",
+  "query": "noise=vc",
+  "name": "vc_r2",
+  "warmup": 233,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=vc&output=ssr",
+  "name": "vc_r0",
+  "warmup": 128,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=vc&output=ssr",
+  "name": "vc_r1",
+  "warmup": 171,
+  "frames": 256
+ },
+ {
+  "tree": "head",
+  "dir": "ssr_only",
+  "page": "measure_ssr.html",
+  "query": "noise=vc&output=ssr",
+  "name": "vc_r2",
+  "warmup": 233,
+  "frames": 256
+ }
+]

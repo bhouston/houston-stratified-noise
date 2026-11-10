@@ -1,0 +1,73 @@
+diff --git a/examples/jsm/lighting/vxgi/VXGINode.js b/examples/jsm/lighting/vxgi/VXGINode.js
+index d1a21921eaf8..a040c3a34ea7 100644
+--- a/examples/jsm/lighting/vxgi/VXGINode.js
++++ b/examples/jsm/lighting/vxgi/VXGINode.js
+@@ -4,6 +4,8 @@ import { Fn, NodeUpdateType, uniform, reference, vec2, vec4, float, uv, mix, pas
+ import { VXGIVolume } from './VXGIVolume.js';
+ import { createConeTracer, gather, intersectVolume, sampleDirectional } from './VXGIConeTracer.js';
+ 
++import { bindWhiteNoise } from '../../tsl/utils/MeasureWhiteNoise.js'; // MEASURE
++
+ const _quadMesh = /*@__PURE__*/ new QuadMesh();
+ const _size = /*@__PURE__*/ new Vector2();
+ 
+@@ -204,6 +206,7 @@ class VXGINode extends Node {
+ 
+ 		this._resolution = uniform( new Vector2() );
+ 		this._frame = uniform( 0 );
++		this._frameU = uniform( 0, 'uint' ); // MEASURE
+ 		this._cameraProjectionMatrix = uniform( camera.projectionMatrix );
+ 		this._cameraProjectionMatrixInverse = uniform( camera.projectionMatrixInverse );
+ 		this._cameraWorldMatrix = uniform( camera.matrixWorld );
+@@ -389,6 +392,7 @@ class VXGINode extends Node {
+ 		if ( this.useTemporalFiltering === true ) {
+ 
+ 			this._frame.value = frame.frameId % TEMPORAL_CYCLE;
++			this._frameU.value = frame.frameId; // MEASURE
+ 
+ 		} else {
+ 
+@@ -473,8 +477,9 @@ class VXGINode extends Node {
+ 			// interleaved gradient noise for both values: its spatial structure converges well under temporal filtering
+ 
+ 			const temporalShift = this._frame.mul( TEMPORAL_SHIFT ).toConst();
+-			const rotationNoise = interleavedGradientNoise( screenCoordinate.add( temporalShift ) ).toConst();
+-			const elevationNoise = interleavedGradientNoise( screenCoordinate.add( temporalShift ).add( vec2( 5.588238, 3.14159 ) ) ).toConst();
++			const measureWhite = globalThis.__NOISE === 'white' ? bindWhiteNoise( this._resolution, 29 )( uvNode, this._frameU ).toConst() : null; // MEASURE
++			const rotationNoise = measureWhite !== null ? measureWhite.x : interleavedGradientNoise( screenCoordinate.add( temporalShift ) ).toConst();
++			const elevationNoise = measureWhite !== null ? measureWhite.y : interleavedGradientNoise( screenCoordinate.add( temporalShift ).add( vec2( 5.588238, 3.14159 ) ) ).toConst();
+ 
+ 			const CONE_COUNT = this.coneCount.toConst();
+ 			const tanHalfAngle = this.coneAngle.mul( 0.5 ).radians().tan().toConst();
+diff --git a/examples/jsm/tsl/display/SSRNode.js b/examples/jsm/tsl/display/SSRNode.js
+index e7bf008e5e54..4ca105973571 100644
+--- a/examples/jsm/tsl/display/SSRNode.js
++++ b/examples/jsm/tsl/display/SSRNode.js
+@@ -5,6 +5,9 @@ import { ENV_RAY_LENGTH, getSpecularDominantFactor, ggxReflectionSample } from '
+ import { boxBlur } from './boxBlur.js';
+ import ImportanceSampledEnvironment from './ImportanceSampledEnvironment.js';
+ 
++import { bindWhiteNoise } from '../utils/MeasureWhiteNoise.js'; // MEASURE
++const measureBindNoise = ( resolution, seed ) => ( globalThis.__NOISE === 'white' ? bindWhiteNoise : bindAnalyticNoise )( resolution, seed ); // MEASURE
++
+ const _quadMesh = /*@__PURE__*/ new QuadMesh();
+ const _size = /*@__PURE__*/ new Vector2();
+ let _rendererState;
+@@ -853,7 +856,7 @@ class SSRNode extends Node {
+ 
+ 		const sampleDepth = ( uv ) => projectionDepth( this.depthNode.sample( uv ).r, this._cameraNear, this._cameraFar );
+ 
+-		const sampleMarchNoise = this.stochastic === true ? bindAnalyticNoise( this._resolution, 47 ) : null;
++		const sampleMarchNoise = this.stochastic === true ? measureBindNoise( this._resolution, 47 ) : null;
+ 
+ 		const computeScreenBorderFactor = Fn( ( [ uvCoord, borderWidth ] ) => {
+ 
+@@ -947,7 +950,7 @@ class SSRNode extends Node {
+ 
+ 					if ( this.envImportanceSampling ) {
+ 
+-						const Xi2 = bindAnalyticNoise( this._resolution, 59 )( uvPos, this._noiseIndex );
++						const Xi2 = measureBindNoise( this._resolution, 59 )( uvPos, this._noiseIndex );
+ 
+ 						envColor.assign( this._importanceEnvironment.sampleEnvironmentMIS( {
+ 							cameraWorldMatrix: this._cameraWorldMatrix,
