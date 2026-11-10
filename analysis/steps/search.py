@@ -341,7 +341,7 @@ def run(tasks):
         for i, (key, out) in enumerate(pool.imap_unordered(evaluate, tasks)):
             res[key] = out
             print(f'  {i + 1}/{len(tasks)} {key}', flush=True)
-    return res
+    return {key: res[key] for key, *_ in tasks}  # task order, so the JSON does not depend on which worker finished first
 
 
 def stage_select():
