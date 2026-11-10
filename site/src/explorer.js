@@ -1,6 +1,6 @@
 // Interactive explorer: runs the src/noise modules on the CPU into 2D canvases.
 import { S, el } from './common.js';
-import { NOISES, GOLDEN_STEP, R4_STEPS, TRADEOFF_R4_STEPS, stepsFor } from '../../src/noise/index.js';
+import { NOISES, GOLDEN_STEP, R4_STEPS, TRADEOFF_R4_STEPS, stepsFor, historyWeight } from '../../src/noise/index.js';
 
 const N = 256, PAD = 32, M = N + 2 * PAD; // 256x256 view plus a margin so the blur (truncated at 4 sigma, sigma <= 8) never sees an edge
 const ORIGIN = 1024 - PAD; // the view starts at the tile-aligned screen coordinate (1024, 1024)
@@ -103,6 +103,7 @@ function step( panel, noise, s ) {
 	if ( panel.done === target ) return false;
 
 	const index = ++ panel.done, { cur, acc } = panel, { D, f, steps, seed, threshold } = s, fn = noise.fn, u = [ 0, 0, 0, 0 ];
+	const weight = historyWeight( index + 1, s.alpha ); // history ramp-up: running mean for the first 1 / alpha frames, then EMA
 
 	for ( let j = 0, k = 0; j < M; j ++ ) for ( let i = 0; i < M; i ++, k ++ ) {
 
@@ -111,7 +112,7 @@ function step( panel, noise, s ) {
 		if ( k === PIXEL ) panel.points.push( [ u[ 0 ], u[ 1 ] ] );
 		const g = f( u, threshold );
 		if ( index === 0 ) acc[ k ] = g;
-		else if ( s.mode === 'ema' ) acc[ k ] += s.alpha * ( g - acc[ k ] );
+		else if ( s.mode === 'ema' ) acc[ k ] += weight * ( g - acc[ k ] );
 		else acc[ k ] += g; // running sum; divided by the frame count when read
 
 	}

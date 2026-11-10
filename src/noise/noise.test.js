@@ -165,6 +165,22 @@ test( 'analytic lattice samplers match the implementations in analysis/r4-ablati
 
 } );
 
+test( 'accumulation ramps up as a running mean, then becomes an EMA', () => {
+
+	const alpha = 0.1, values = Array.from( { length: 400 }, ( _, i ) => N.white( 3, 5, i ) );
+	const run = ( count ) => values.slice( 0, count ).reduce( ( history, v, i ) => N.accumulate( history, v, i + 1, alpha ), 123 ); // the initial value must not matter
+
+	// after 5 frames (and up to 1 / alpha): exactly the mean of the inputs
+	for ( const count of [ 1, 5, 10 ] ) assert.ok( Math.abs( run( count ) - values.slice( 0, count ).reduce( ( a, b ) => a + b ) / count ) < 1e-12 );
+
+	// after many frames: a plain EMA, whatever it was seeded with
+	const ema = values.reduce( ( history, v ) => history + alpha * ( v - history ), values[ 0 ] );
+	assert.ok( Math.abs( run( 400 ) - ema ) < 1e-9 );
+	assert.equal( N.historyWeight( 1, alpha ), 1 );
+	assert.equal( N.historyWeight( 50, alpha ), alpha );
+
+} );
+
 test( 'step constants', () => {
 
 	const all = [ N.GOLDEN_STEP, ...N.R2_STEPS, ...N.R4_STEPS, ...N.TRADEOFF_R4_STEPS ];

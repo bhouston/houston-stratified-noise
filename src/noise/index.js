@@ -40,4 +40,5 @@ export * from './r2.js';
 export * from './bayer.js';
 export * from './rd.js';
 export * from './analytic-r4.js';
+export * from './accumulate.js';
 export { VC64 } from './vc64.js';
