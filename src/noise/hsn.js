@@ -1,6 +1,5 @@
-// Plain-JavaScript reference for Houston Stratified Noise (HSN), which Three.js calls
-// Hierarchical Hashed Weyl (HHW). Transliterated operation-for-operation from three.js PR #35429,
-// examples/jsm/tsl/utils/HierarchicalHashedWeyl.js (commit 34137c3756fa).
+// Plain-JavaScript reference for Houston Stratified Noise (HSN). Transliterated operation-for-operation
+// from the TSL in three.js PR #35429, examples/jsm/tsl/utils/HierarchicalHashedWeyl.js (commit 34137c3756fa).
 // All arithmetic is 32-bit unsigned and wrapping, exactly as WGSL u32.
 
 import { GOLDEN_STEP, R4_STEPS } from './steps.js';
@@ -61,15 +60,14 @@ export function hsnBits( x, y, index, seed, step = GOLDEN_STEP ) {
 
 }
 
-// hierarchicalHashedWeyl( coordinate, index, seed, step ): a float in [0, 1), a multiple of 2^-24.
+// The scalar noise: a float in [0, 1), a multiple of 2^-24.
 export function hsn( x, y, index, seed, step = GOLDEN_STEP ) {
 
 	return ( hsnBits( x, y, index, seed, step ) >>> 8 ) / 16777216;
 
 }
 
-// bindHierarchicalHashedWeyl( resolution, seed )( uv, index ) -> vec4: four independently seeded
-// dimensions, each with its own R4 step.
+// Four values per pixel as the three.js helper binds them: independently seeded, each with its own R4 step.
 export function hsn4( x, y, index, seed = 0 ) {
 
 	return [ 0, 1, 2, 3 ].map( ( k ) => hsn( x, y, index, seed * 4 + k + 1, R4_STEPS[ k ] ) );

@@ -1,22 +1,43 @@
-// Baselines without the hierarchy: a per-pixel spatial value plus an R_d (Weyl) step in time.
-// For one scalar the R_1 step is the golden ratio; pass R2_STEPS[k] / R4_STEPS[k] for more dimensions.
+// Baselines without the hierarchy: a per-pixel spatial phase plus a per-dimension R_d (Weyl) step in time.
+// Definitions match analysis/temporal (extras.py: hash_rd, ign_rd; noises.py: vc_rd).
 
-import { pixelHash } from './hsn.js';
+import { pcg } from './hashes.js';
 import { ign } from './ign.js';
-import { GOLDEN_STEP } from './steps.js';
+import { VC64 } from './vc64.js';
+import { GOLDEN_STEP, RD_ALPHAS } from './steps.js';
 
-// "hash + R_d": white in space (a hashed Cranley-Patterson offset per pixel), low-discrepancy in time.
-// This is HSN with the rank removed.
-export function hashRd( x, y, index = 0, seed = 1, step = GOLDEN_STEP ) {
+const f = Math.fround;
 
-	return ( ( pixelHash( x, y, seed ) + Math.imul( index >>> 0, step ) ) >>> 8 ) / 16777216;
+// "Hash + R_d": one PCG hash per pixel and dimension as a Cranley-Patterson offset, plus index * step in
+// uint32. White in space, low-discrepancy in time: HSN with the rank removed.
+export function hashRd( x, y, index = 0, dimension = 0, step = GOLDEN_STEP, seed = 0 ) {
+
+	const phase = pcg( x ^ pcg( y ^ pcg( dimension + 7001 + 97 * seed ) ) );
+	return ( ( phase + Math.imul( index >>> 0, step ) ) >>> 8 ) / 16777216;
 
 }
 
-// "IGN + R_d": IGN in space, the same Weyl step in time.
-export function ignRd( x, y, index = 0, step = GOLDEN_STEP ) {
+// "IGN + R_d": IGN( pixel centre + a large fixed offset per dimension ) as the phase, plus index * step in uint32.
+export const IGN_RD_OFFSETS = [ [ 0, 0 ], [ 47, 17 ], [ 101, 59 ], [ 173, 113 ] ];
 
-	const v = ign( x, y ) + ( Math.imul( index >>> 0, step ) >>> 0 ) / 4294967296;
+export function ignRd( x, y, index = 0, dimension = 0, step = GOLDEN_STEP ) {
+
+	const [ ox, oy ] = IGN_RD_OFFSETS[ dimension ];
+	const phase = ( Math.floor( ign( f( f( x + 0.5 ) + ox ), f( f( y + 0.5 ) + oy ) ) * 16777216 ) << 8 ) >>> 0;
+	return ( ( phase + Math.imul( index >>> 0, step ) ) >>> 8 ) / 16777216;
+
+}
+
+// "Void-and-cluster + R_d": a 64x64 blue-noise texture read at a per-dimension texel offset as the phase,
+// plus float( index ) * alpha_d in float32, as a shader sampling a texture would do it. Float time loses
+// precision at large indices (about 10^6 frames); pass alpha = step / 2^32 to use other steps.
+export const VC_OFFSETS = [ [ 0, 0 ], [ 23, 41 ], [ 47, 13 ], [ 11, 53 ] ];
+
+export function vcRd( x, y, index = 0, dimension = 0, alpha = RD_ALPHAS[ 1 ][ 0 ] ) {
+
+	const [ ox, oy ] = VC_OFFSETS[ dimension ];
+	const texel = f( ( VC64[ ( ( y + oy ) % 64 ) * 64 + ( x + ox ) % 64 ] + 0.5 ) / 4096 );
+	const v = f( texel + f( f( index ) * f( alpha ) ) );
 	return v - Math.floor( v );
 
 }

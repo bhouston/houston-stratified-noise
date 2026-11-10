@@ -9,11 +9,17 @@ export function ign( x, y ) {
 
 }
 
-// Animated IGN as in the three.js noise-smoothing example: scroll the coordinate diagonally by
-// 5.588238 px per frame, wrapping the index at 256 to keep float32 precision.
-export function animatedIgn( x, y, index = 0 ) {
+// Per-dimension pixel offsets of animated IGN in the temporal analysis. Dimension 2's is the removed
+// three.js VXGI code; dimensions 3 and 4 are arbitrary choices.
+export const IGN_OFFSETS = [ [ 0, 0 ], [ 5.588238, 3.14159 ], [ 47, 17 ], [ 101, 59 ] ];
 
-	const shift = f( f( index % 256 ) * f( 5.588238 ) );
-	return ign( f( x + shift ), f( y + shift ) );
+// Animated IGN: IGN( pixel centre + index * 5.588238 [+ offset_d] ), float32 time. `cycle` wraps the index
+// (the removed VXGI code used 64); without it float precision degrades by about 10^5 frames.
+export function animatedIgn( x, y, index = 0, dimension = 0, cycle = 0 ) {
+
+	const shift = f( f( cycle ? index % cycle : index ) * f( 5.588238 ) );
+	const px = f( f( x + 0.5 ) + shift ), py = f( f( y + 0.5 ) + shift );
+	if ( dimension === 0 ) return ign( px, py );
+	return ign( f( px + f( IGN_OFFSETS[ dimension ][ 0 ] ) ), f( py + f( IGN_OFFSETS[ dimension ][ 1 ] ) ) );
 
 }

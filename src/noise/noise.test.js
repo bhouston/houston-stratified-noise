@@ -114,16 +114,74 @@ test( 'other noises match the numpy implementations used by the spatial analysis
 
 } );
 
-test( 'every registered noise stays in [0, 1) and hash + R_d is HSN without the rank', () => {
+test( 'multi-value noises match the implementations measured by the temporal analysis', () => {
 
-	for ( const { id, fn } of N.NOISES ) for ( let i = 0; i < 20000; i ++ ) {
+	// written by `pnpm py analysis/temporal/extras.py vectors`
+	const p = load( './temporal-vectors.json' );
 
-		const v = fn( i * 37 % 2300, i * 91 % 2300, i % 300, 1 + i % 8 );
+	for ( const D of [ 1, 2, 4 ] ) p.x.forEach( ( x, k ) => {
+
+		const y = p.y[ k ], n = p.index[ k ], steps = N.stepsFor( D );
+
+		for ( let d = 0; d < D; d ++ ) {
+
+			const at = `D=${D} d=${d} x=${x} y=${y} index=${n}`;
+			assert.equal( N.hsn( x, y, n, d + 1, steps[ d ] ), p.hsn[ D ][ d ][ k ], `hsn ${at}` );
+			assert.equal( N.hashRd( x, y, n, d, steps[ d ] ), p.hashRd[ D ][ d ][ k ], `hashRd ${at}` );
+			assert.equal( N.ignRd( x, y, n, d, steps[ d ] ), p.ignRd[ D ][ d ][ k ], `ignRd ${at}` );
+			assert.equal( N.vcRd( x, y, n, d, N.RD_ALPHAS[ D ][ d ] ), p.vcRd[ D ][ d ][ k ], `vcRd ${at}` );
+			assert.equal( N.animatedIgn( x, y, n, d ), p.animatedIgn[ D ][ d ][ k ], `animatedIgn ${at}` );
+			assert.equal( N.white( x, y, n, d ), p.white[ D ][ d ][ k ], `white ${at}` );
+
+		}
+
+	} );
+
+	assert.deepEqual( [ ...N.VC64 ].sort( ( a, b ) => a - b ), Array.from( { length: 4096 }, ( _, i ) => i ) );
+
+} );
+
+test( 'analytic lattice samplers match the implementations in analysis/r4-ablation', () => {
+
+	// written by `pnpm py analysis/r4-ablation/run.py vectors`
+	const p = load( './r4-vectors.json' );
+
+	for ( const D of [ 2, 4 ] ) p.x.forEach( ( x, k ) => {
+
+		const y = p.y[ k ], n = p.index[ k ];
+
+		for ( let d = 0; d < D; d ++ ) {
+
+			const at = `D=${D} d=${d} x=${x} y=${y} index=${n}`;
+			assert.equal( N.analyticR4Tile( x, y, n, d ), p.pr42[ D ][ d ][ k ], `analyticR4Tile ${at}` );
+			assert.equal( N.analyticSingleLattice( x, y, n, N.RD_ALPHAS[ D ][ d ] ), p.single[ D ][ d ][ k ], `analyticSingleLattice ${at}` );
+			assert.equal( N.analyticPerDimensionLattices( x, y, n, d, N.stepsFor( D )[ d ] ), p.perDimension[ D ][ d ][ k ], `analyticPerDimensionLattices ${at}` );
+			assert.equal( N.engineSingleLattice( x, y, n, N.RD_ALPHAS[ D ][ d ], D === 4 ? 47 : 29 ), p.engineE[ D ][ d ][ k ], `engineSingleLattice ${at}` );
+			assert.equal( N.engineLattices( x, y, n, d, N.RD_ALPHAS[ D ][ d ] ), p.engineF[ D ][ d ][ k ], `engineLattices ${at}` );
+
+		}
+
+	} );
+
+} );
+
+test( 'step constants', () => {
+
+	const all = [ N.GOLDEN_STEP, ...N.R2_STEPS, ...N.R4_STEPS, ...N.TRADEOFF_R4_STEPS ];
+	assert.ok( all.every( ( s ) => s % 2 === 1 && s > 0 && s < 2 ** 32 ) ); // odd, so the u32 state has period 2^32
+	for ( const D of [ 1, 2, 4 ] ) N.stepsFor( D ).forEach( ( s, d ) => assert.ok( Math.abs( s - N.RD_ALPHAS[ D ][ d ] * 2 ** 32 ) <= 2 ) );
+	assert.deepEqual( N.stepsFor( 4 ), N.R4_STEPS ); // the trade-off candidate is never the default
+
+} );
+
+test( 'every registered noise stays in [0, 1)', () => {
+
+	for ( const { id, fn, multi } of N.NOISES ) for ( let i = 0; i < 20000; i ++ ) {
+
+		const D = multi ? [ 1, 2, 4 ][ i % 3 ] : 1, d = i % D;
+		const v = fn( i * 37 % 2300, i * 91 % 2300, i % 300, i % 8, d, N.stepsFor( D ) );
 		assert.ok( v >= 0 && v < 1, `${id} returned ${v}` );
 
 	}
-
-	assert.equal( N.hashRd( 10, 20, 0, 5 ), N.whiteHsnHash( 10, 20, 0, 5 ) );
-	assert.equal( N.animatedIgn( 10, 20, 0 ), N.ign( 10, 20 ) );
 
 } );

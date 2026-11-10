@@ -55,3 +55,19 @@ export function hash12( x, y ) {
 	return fract( f( f( p0 + p1 ) * p2 ) );
 
 }
+
+// three.js Hash.js PCG (one u32 in, one u32 out).
+export function pcg( v ) {
+
+	const state = ( Math.imul( v, 747796405 ) + 2891336453 ) >>> 0;
+	const word = Math.imul( ( state >>> ( ( state >>> 28 ) + 4 ) ) ^ state, 277803737 ) >>> 0;
+	return ( ( word >>> 22 ) ^ word ) >>> 0;
+
+}
+
+// White noise as the temporal analysis defines it: an independent value per pixel, frame and dimension.
+export function white( x, y, index = 0, dimension = 0, salt = 0 ) {
+
+	return unit24( pcg( x ^ pcg( y ^ pcg( index ^ pcg( dimension + 1 + 1000 * salt ) ) ) ) );
+
+}
