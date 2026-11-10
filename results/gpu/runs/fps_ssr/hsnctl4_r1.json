@@ -1,0 +1,25 @@
+{
+	"job": {
+		"tree": "head",
+		"dir": "fps_ssr",
+		"page": "measure_ssr.html",
+		"query": "noise=default&w=1920&h=1080",
+		"name": "hsnctl4_r1",
+		"fps": 5
+	},
+	"adapter": {
+		"vendor": "apple",
+		"architecture": "metal-3",
+		"device": "",
+		"description": "",
+		"isFallbackAdapter": false,
+		"userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36"
+	},
+	"chrome": "Chrome/157.0.8103.39",
+	"result": {
+		"frames": 196,
+		"seconds": 5.0185,
+		"fps": 39.05549466972202,
+		"vcGenerateMs": null
+	}
+}

@@ -19,25 +19,27 @@
 
 	<h2>What the measurements say</h2>
 	<ol>
+		<li><strong>In the engine it is level with FAST blue-noise textures, at zero bytes.</strong> In SSR and VXGI under TRAA, %short% is level with the FAST blue-noise textures on frame RMSE (VXGI 9.99 against 10.18, within run-to-run variation; SSR 2.982 against 2.981), at zero bytes against a 3.0 MB atlas. The error is distributed differently: in VXGI FAST has 19% lower bias while %short% has 7% less temporal noise and 4% less flicker; in SSR %short% has 15% lower bias while FAST has about 1% less noise and flicker. The plain hash with per-value steps also matches or beats FAST on RMSE. The flat-field gaps against FAST did not carry over to the engine, likely because TRAA and the denoiser are not the filter the FAST atlas is optimised for (untested). Scope: two effects, a static camera, one GPU, and FAST call sites written for this measurement.</li>
 		<li><strong>The fix that matters is one integer Weyl step per value.</strong> The previous Three.js SSR and VXGI samplers were biased because their values per pixel were not independent. Giving each value its own integer Weyl step fixes that, and every variant measured that does so removes the banding.</li>
-		<li><strong>In the engine, the hierarchy's measured benefit is lower flicker.</strong> A plain per-pixel hash with the same steps matches %short% on SSR within 2%. On VXGI, like for like with R2 steps, the hash is about 4% lower on RMSE (8.86 against 9.26) with about 24% more flicker (5.07 against 4.09). %short% costs four hashes per value against the hash's one, with no measurable frame-rate change.</li>
+		<li><strong>The hierarchy's measured in-engine benefit over a plain hash is lower flicker.</strong> A plain per-pixel hash with the same steps matches %short% on SSR within 2%. On VXGI, like for like with R2 steps, the hash is about 4% lower on RMSE (8.86 against 9.26) with about 24% more flicker (5.07 against 4.09). %short% costs four hashes per value against the hash's one, with no measurable frame-rate change.</li>
 		<li><strong>It is not blue noise.</strong> On a single frame it is isotropic and free of spectral peaks, like blue noise, but its low frequencies are only partly suppressed, and its error after a blur is worse than interleaved gradient noise (IGN), R2 and blue-noise textures.</li>
 		<li><strong>IGN-based samplers are still better for one value per pixel.</strong> Under exponential accumulation and a blur, animated IGN has about 1.5 times lower error, and IGN as a spatial phase with a golden-ratio Weyl step is also ahead (6.24 against 7.57).</li>
 	</ol>
 	<p>Samplers like this are used under temporal accumulation (TRAA or an exponential moving average over roughly 16 to 32 frames, with a small spatial filter), so the accumulated results come first. Single-frame and short-history results follow; they characterise the pattern and the frames right after a history reset.</p>
 
 	<h2>Accumulated over time</h2>
-	<p class="caption">CPU model. Steady-state RMSE ×1000 under an exponential moving average (α = 0.1, about 19 effective frames) and a Gaussian σ = 1 blur, static flat field. Lower is better. The animated IGN error for two and four values per pixel is bias from its correlated values.</p>
-	<div id="accumulated-table"></div>
-	<p>With one value per pixel %short% matches or beats the FAST and STBN textures on thresholded signals; on smooth one-value test functions FAST is about 30% better and STBN about 14%. With two values it trails FAST by 25%, and a plain hash with the same steps ties it once about four frames are accumulated. With four values it is 7–12% better than stacked FAST and STBN, behind void-and-cluster with per-value steps, and keeps a small lead over the plain hash (4–14% depending on the window, about 14% at 32 frames). Per-pixel convergence comes from the Weyl steps, not from the hierarchy.</p>
-
 	<h3>In Three.js on a real GPU, steady state after TRAA</h3>
-	<p class="caption">Mean ± SD over three runs of 256 frames, ×10⁻³, change against the previous sampler; Apple M3, hardware WebGPU. A to D are simpler fixes run through the same harness. The shipped %short% row uses the first two R4 steps for VXGI while A, B and D use R2 steps, so compare A with C for a like-for-like step set. Bias is measured against white noise through the same TRAA, which may favour the plain hash in the bias ranking.</p>
+	<p class="caption">Mean ± SD over three runs of 256 frames, ×10⁻³, change against the previous sampler; Apple M3, hardware WebGPU. H is the FAST spatio-temporal atlas; A to D are simpler fixes run through the same harness. The shipped %short% row uses the first two R4 steps for VXGI while A, B and D use R2 steps, so compare A with C for a like-for-like step set. Bias is measured against white noise through the same TRAA, which may favour the plain hash in the bias ranking.</p>
 	<h4>VXGI</h4>
 	<div id="vxgi-table"></div>
 	<h4>SSR, denoised</h4>
 	<div id="ssr-table"></div>
 	<p>One static scene and camera per effect and one GPU; motion and disocclusion were not measured. The method, the light map bake and the limits are on the <a href="results.html#engine">Results</a> page.</p>
+
+	<h3>CPU model: exponential accumulation with a blur</h3>
+	<p class="caption">CPU model. Steady-state RMSE ×1000 under an exponential moving average (α = 0.1, about 19 effective frames) and a Gaussian σ = 1 blur, static flat field. Lower is better. The animated IGN error for two and four values per pixel is bias from its correlated values.</p>
+	<div id="accumulated-table"></div>
+	<p>With one value per pixel %short% matches or beats the FAST and STBN textures on thresholded signals; on smooth one-value test functions FAST is about 30% better and STBN about 14%. With two values it trails FAST by 25%, and a plain hash with the same steps ties it once about four frames are accumulated. With four values it is 7–12% better than stacked FAST and STBN, behind void-and-cluster with per-value steps, and keeps a small lead over the plain hash (4–14% depending on the window, about 14% at 32 frames). Per-pixel convergence comes from the Weyl steps, not from the hierarchy.</p>
 
 	<h2>Single frame and short histories</h2>
 	<p id="headline"></p>

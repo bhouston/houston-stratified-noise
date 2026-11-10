@@ -13,8 +13,8 @@ def save(name, img):
 
 
 # real-time effects: (crop box, exposure of the frame crop, gain of the error image), as in the figures
-for fx, variants, (x, y, w, h), exposure, gain in (('vxgi', ['base', 'hsn', 'hash', 'ign', 'vc', 'hsnr2', 'e', 'er2', 'f', 'fr2', 'g'], (240, 140, 300, 200), 1.6, 40),
-                                                     ('ssr', ['base', 'hsn', 'hash', 'ign', 'vc', 'e', 'f', 'g'], (470, 400, 300, 200), 2.5, 300)):
+for fx, variants, (x, y, w, h), exposure, gain in (('vxgi', ['base', 'hsn', 'hash', 'ign', 'vc', 'hsnr2', 'e', 'er2', 'f', 'fr2', 'g', 'h'], (240, 140, 300, 200), 1.6, 40),
+                                                     ('ssr', ['base', 'hsn', 'hash', 'ign', 'vc', 'e', 'f', 'g', 'h'], (470, 400, 300, 200), 2.5, 300)):
     L = lambda n: np.fromfile(f'{RAW}{fx}/{n}', dtype=np.float32).reshape(720, 960, 3).astype(np.float64)
     ref = sum(L(n + '_mean.f32') for n in ('white_base_s1', 'white_head_s2', 'white_base_s3', 'white_head_s4')) / 4
     for v in variants:

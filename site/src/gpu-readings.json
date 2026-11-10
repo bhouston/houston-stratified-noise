@@ -155,5 +155,84 @@
 		"**Volume lighting** not measured."
 	],
 	"tsl": "import { Fn, interleavedGradientNoise, uint, vec2, vec4 } from 'three/tsl';\nimport { R2_STEPS, R4_STEPS } from './HierarchicalHashedWeyl.js';\n\n// A. \"Hash + R_d\": white per-pixel Cranley-Patterson offsets + per-dimension Roberts (R2/R4) Weyl steps.\n\nconst pcg = Fn( ( [ input ] ) => {\n\n\tconst state = uint( input ).mul( uint( 747796405 ) ).add( uint( 2891336453 ) ).toVar();\n\tconst word = state.shiftRight( state.shiftRight( 28 ).add( 4 ) ).bitXor( state ).mul( uint( 277803737 ) ).toVar();\n\treturn word.shiftRight( 22 ).bitXor( word );\n\n} );\n\nexport function bindHashRd( resolution, seed = 0, steps = R4_STEPS ) {\n\n\treturn Fn( ( [ uvCoord, sampleIndex ] ) => {\n\n\t\tconst pixel = uvCoord.mul( resolution ).floor();\n\t\tconst index = uint( sampleIndex ).toConst();\n\t\tconst state = pcg( uint( pixel.x ).add( pcg( uint( pixel.y ).add( pcg( uint( seed ) ) ) ) ) ).toVar();\n\t\tconst result = vec4( 0 ).toVar();\n\n\t\tfor ( let k = 0; k < steps.length; k ++ ) {\n\n\t\t\tif ( k > 0 ) state.assign( pcg( state ) ); // next dimension's offset\n\t\t\tresult.element( k ).assign( state.add( index.mul( uint( steps[ k ] ) ) ).shiftRight( 8 ).toFloat().div( 16777216 ) );\n\n\t\t}\n\n\t\treturn result;\n\n\t} );\n\n}\n\n// B. \"IGN + R_d\": interleaved gradient noise phase at a different pixel offset per dimension + per-dimension Roberts Weyl steps.\n\nexport function bindIgnRd( resolution, seed = 0, steps = R4_STEPS ) {\n\n\treturn Fn( ( [ uvCoord, sampleIndex ] ) => {\n\n\t\tconst pixel = uvCoord.mul( resolution ).floor().add( 0.5 );\n\t\tconst index = uint( sampleIndex ).toConst();\n\t\tconst result = vec4( 0 ).toVar();\n\n\t\tfor ( let k = 0; k < steps.length; k ++ ) {\n\n\t\t\tconst offset = vec2( 97 * ( k + 1 ) + 13 * seed, 61 * ( k + 1 ) + 7 * seed );\n\t\t\tconst phase = uint( interleavedGradientNoise( pixel.add( offset ) ).mul( 16777216 ) ).shiftLeft( 8 );\n\t\t\tresult.element( k ).assign( phase.add( index.mul( uint( steps[ k ] ) ) ).shiftRight( 8 ).toFloat().div( 16777216 ) );\n\n\t\t}\n\n\t\treturn result;\n\n\t} );\n\n}\n",
-	"callsites": "Call sites measured: VXGI `bindHashRd( this._resolution, 29, R2_STEPS )( uvNode, this._frame )` using `.x`/`.y`; SSR `bindHashRd( this._resolution, 47 )` and `( this._resolution, 59 )` with default `R4_STEPS`. `R2_STEPS = [ 3242174889, 2447445413 ]`, `R4_STEPS = [ 3679390609, 3152041523, 2700274805, 2313257605 ]`. The TSL for D is in `analysis/gpu/harness/MeasureVoidCluster.js`."
+	"callsites": "Call sites measured: VXGI `bindHashRd( this._resolution, 29, R2_STEPS )( uvNode, this._frame )` using `.x`/`.y`; SSR `bindHashRd( this._resolution, 47 )` and `( this._resolution, 59 )` with default `R4_STEPS`. `R2_STEPS = [ 3242174889, 2447445413 ]`, `R4_STEPS = [ 3679390609, 3152041523, 2700274805, 2313257605 ]`. The TSL for D is in `analysis/gpu/harness/MeasureVoidCluster.js`.",
+	"h_uses": [
+		"**The PR does not wire FAST into SSR, VXGI or any other effect.** PR head `98781c8152e5` adds only `examples/jsm/tsl/utils/FASTNoise.js`, two atlases and the example `webgpu_tsl_blue_noise.html`. The call sites below were written for this measurement.",
+		"**Sampling code is verbatim.** `FASTNoise.js` and the atlas were copied unchanged from the pull request into the head checkout, and the atlas is loaded with the PR's `loadFASTNoise()`.",
+		"**Atlas:** `gauss1-ema01-spatio-temporal.png`, the one the PR's notes recommend under accumulation. The \"spatial\" atlas was not measured.",
+		"**Channels, per the PR's packing notes:** SSR takes `fastNoise().xyzw` (xy is EA's vector2 texture for the GGX direction, z the scalar \"real\" texture for march jitter, w the same scalar texture shifted 83 rows and 49 columns). VXGI takes `.xy`, the vector2 texture.",
+		"**Call site:** `fastNoise( atlas, new Vector2( seed * 13 % 128, seed * 29 % 128 ), uint( sampleIndex ) )`, with the same seeds as the other variants (VXGI 29, SSR 47 and 59) used only to pick the fixed tile offset.",
+		"**Temporal use, as written in `fastNoise`:** slice = `index mod 32` (one 128×128 slice per frame, a 32-frame cycle); once per cycle the tile is translated by `(37, 71) × (cycle mod 128)` pixels, so the full pattern repeats after 4,096 frames; values are not rotated between cycles; values are 8-bit bin centres.",
+		"**Filter mismatch:** the atlas is optimised for a σ = 1 Gaussian in space and an α = 0.1 EMA in time. Neither effect uses that filter: VXGI goes through TRAA only, and SSR through the 8-frame temporal denoiser plus TRAA.",
+		"**Cost:** 3,025,821 bytes downloaded (256×4096 8-bit RGB PNG). Measured load time was 17–36 ms, but that is module import plus fetch from localhost only; it excludes network time, and image decode and GPU upload could not be isolated."
+	],
+	"h_fps": "**fps:** the GPU was still shared, so only ratios to the same-round {S} control are given (five rounds, median). Per-round ratios for H were 0.98–1.00 in VXGI (plus one disturbed first round at 1.17) and 0.94–1.06 in SSR. No speed difference between FAST and {S} is resolved.",
+	"h_table": [
+		[
+			"Effect",
+			"Metric",
+			"{S} against FAST",
+			"Exceeds run-to-run variation?"
+		],
+		[
+			"VXGI",
+			"RMSE",
+			"1.9% lower (9.99 against 10.18)",
+			"No; inside {S}'s SD of 0.20"
+		],
+		[
+			"VXGI",
+			"Bias",
+			"19% higher (5.26 against 4.42)",
+			"Yes"
+		],
+		[
+			"VXGI",
+			"Temporal noise",
+			"7% lower (8.49 against 9.17)",
+			"Yes, about 3 SD"
+		],
+		[
+			"VXGI",
+			"Flicker",
+			"4% lower (4.14 against 4.32)",
+			"Yes"
+		],
+		[
+			"SSR",
+			"RMSE",
+			"Equal (2.982 against 2.981)",
+			"No"
+		],
+		[
+			"SSR",
+			"Bias",
+			"15% lower (0.659 against 0.773)",
+			"Yes"
+		],
+		[
+			"SSR",
+			"Temporal noise",
+			"1.0% higher (2.908 against 2.880)",
+			"Yes, but tiny"
+		],
+		[
+			"SSR",
+			"Flicker",
+			"0.6% higher (2.463 against 2.448)",
+			"Yes, but tiny"
+		]
+	],
+	"h_plain": [
+		"**VXGI:** FAST has the lower steady-state error; {S} has less noise and flicker. Net frame error is a tie.",
+		"**SSR:** {S} has the lower steady-state error; FAST has marginally less noise and flicker. Net frame error is identical.",
+		"**Hash + R_d against FAST:** the hash has lower RMSE than FAST in VXGI (−13%) and equal RMSE in SSR (+0.6%), with lower bias in SSR and equal bias in VXGI. It flickers 17% more than FAST in VXGI.",
+		"**Crops (the variants figure, H added):** FAST shows no banding or lattice in single frames in either effect. Its time-averaged error is unstructured grain, visually the same class as {S} and the hash."
+	],
+	"h_agreement": [
+		"**Two values (VXGI):** the CPU test had {S} 25% behind FAST under accumulation plus a small blur. In-engine there is no RMSE gap. FAST is ahead only on steady-state error, by 19%, offset by its higher temporal noise.",
+		"**Four values (SSR):** the CPU test had {S} 7% ahead. In-engine RMSE is equal; {S} is ahead only on steady-state error, by 15%.",
+		"The likely reason (untested) is the filter mismatch: FAST's advantage is tuned to a σ = 1 Gaussian with an α = 0.1 EMA, and TRAA with neighbourhood clamping (and the SSR denoiser) is a different filter."
+	],
+	"h_caveat": "Caveat carried over: \"bias\" is measured against white noise through the same TRAA, so small bias differences between good samplers may partly reflect how TRAA's clamp responds to each sampler's noise."
 }

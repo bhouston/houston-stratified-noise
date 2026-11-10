@@ -1,6 +1,6 @@
 // In-engine section of the Results page, rendered from results/gpu (measured on real GPU hardware).
 import { S, command, dataTable, figure, list, r } from './common.js';
-import { rt, realtime, bakeTable, sensitivityTable } from './data.js';
+import { rt, realtime, bakeTable, sensitivityTable, FAST } from './data.js';
 import g from './gpu-readings.json';
 
 const a = rt.vxgi.adapter;
@@ -9,6 +9,21 @@ const GPU = command( 'pnpm analysis:gpu' ) + '<p class="cmd">This regenerates th
 document.getElementById( 'engine-body' ).innerHTML = `
 	<p>Measurements of the Three.js pull request in the engine: its head against its merge base for real-time VXGI and denoised SSR, and a light map bake, plus four simpler fixes run through the same harness. The published numbers were measured on a hardware WebGPU adapter (vendor <code>${a.vendor}</code>, architecture <code>${a.architecture}</code>, not a fallback adapter: an Apple M3) in ${rt.vxgi.chrome.replace( '/', ' ' )}.</p>
 	${GPU}
+	<h3>Lead finding: level with the FAST blue-noise textures, at zero bytes</h3>
+	<p>In SSR and VXGI under TRAA, ${S} is level with the FAST blue-noise textures on frame RMSE (VXGI 9.99 against 10.18, within run-to-run variation; SSR 2.982 against 2.981), at zero bytes against a 3.0 MB atlas. The error is distributed differently: in VXGI FAST has 19% lower bias while ${S} has 7% less temporal noise and 4% less flicker; in SSR ${S} has 15% lower bias while FAST has about 1% less noise and flicker. The plain hash with per-value steps also matches or beats FAST on RMSE. The flat-field gaps against FAST did not carry over to the engine, likely because TRAA and the denoiser are not the filter the FAST atlas is optimised for (untested). Scope: two effects, a static camera, one GPU, and FAST call sites written for this measurement.</p>
+	<p class="caption">VXGI, real time (two values per pixel). H is the FAST spatio-temporal atlas of mrdoob/three.js#35244, sampled with that pull request's own <code>FASTNoise.js</code>.</p>
+	${realtime( 'vxgi', 2, 3, FAST )}
+	<p class="caption">SSR, denoised (four values per pixel).</p>
+	${realtime( 'ssr', 3, 3, FAST )}
+	<p>${r( g.h_fps )}</p>
+	${dataTable( { head: g.h_table[ 0 ].map( r ), rows: g.h_table.slice( 1 ).map( ( row ) => row.map( r ) ) } )}
+	${list( g.h_plain )}
+	<p><strong>How H uses the FAST textures:</strong></p>
+	${list( g.h_uses )}
+	<p><strong>Agreement with the CPU flat-field result:</strong> mostly not, in size; partly, in sign.</p>
+	${list( g.h_agreement )}
+	<p>${r( g.h_caveat )}</p>
+
 	${figure( 'gpu/figures/in-engine-results.webp', 'Measured change against the previous code for VXGI, SSR and the light map bake' )}
 
 	<h3>Before and after: VXGI, real time</h3>

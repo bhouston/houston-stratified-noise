@@ -5,6 +5,16 @@ const query = new URLSearchParams( location.search );
 globalThis.__NOISE = query.get( 'noise' ) ?? 'default';
 globalThis.__WHITE_SEED = Number( query.get( 'seed' ) ?? 0 );
 
+// variant H: load the FAST atlas with the PR's own loader before any node is built
+if ( globalThis.__NOISE === 'h' ) {
+
+	const t0 = performance.now();
+	const { loadFASTNoise } = await import( './jsm/tsl/utils/FASTNoise.js' );
+	globalThis.__FAST_ATLAS = await loadFASTNoise( 'textures/noises/fast/gauss1-ema01-spatio-temporal.png' );
+	globalThis.__FAST_LOAD_MS = performance.now() - t0; // module import + fetch from localhost + PNG decode (not the GPU upload)
+
+}
+
 export const WIDTH = Number( query.get( 'w' ) ?? 960 ), HEIGHT = Number( query.get( 'h' ) ?? 720 );
 
 export async function adapterInfo() {
@@ -98,7 +108,7 @@ export async function capture( renderer, target, renderFrame, { name, warmup, fr
 	await save( name + '_mean.f32', mean );
 	await save( name + '_last.f32', current );
 
-	return { name, width: w, height: h, warmup, frames, temporalVariance: variance / ( n * 3 ), flickerMSE: flicker / ( n * 3 * Math.max( 1, frames - 1 ) ), nonFinite, ms: performance.now() - t0, frameId: renderer._nodes.nodeFrame.frameId, noise: globalThis.__NOISE, vcGenerateMs: globalThis.__VC_MS ?? null, vcTextureBytes: globalThis.__VC_BYTES ?? null };
+	return { name, width: w, height: h, warmup, frames, temporalVariance: variance / ( n * 3 ), flickerMSE: flicker / ( n * 3 * Math.max( 1, frames - 1 ) ), nonFinite, ms: performance.now() - t0, frameId: renderer._nodes.nodeFrame.frameId, noise: globalThis.__NOISE, fastLoadMs: globalThis.__FAST_LOAD_MS ?? null, vcGenerateMs: globalThis.__VC_MS ?? null, vcTextureBytes: globalThis.__VC_BYTES ?? null };
 
 }
 

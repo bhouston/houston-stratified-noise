@@ -3,6 +3,8 @@ import { Fn, float, interleavedGradientNoise, uint, vec2, vec4 } from 'three/tsl
 import { R2_STEPS, R4_STEPS, bindHierarchicalHashedWeyl, hierarchicalHashedWeyl } from './HierarchicalHashedWeyl.js';
 import { bindWhiteNoise } from './MeasureWhiteNoise.js';
 import { bindVoidClusterRd } from './MeasureVoidCluster.js';
+import { Vector2 } from 'three/webgpu';
+import { fastNoise } from './FASTNoise.js'; // verbatim from mrdoob/three.js#35244 (head 98781c8152e5)
 import { bindAnalyticNoise as bindAnalyticR4 } from './MeasureRNoiseR4.js'; // verbatim RNoise.js of bhouston/three.js#42, commit 8899ba3e387c
 import { R2_ALPHAS, R4_ALPHAS, bindAnalyticPerDimensionLattices, bindAnalyticSingleLattice } from './MeasureAnalyticR4.js';
 
@@ -91,6 +93,9 @@ export function measureBindNoise( resolution, seed, dimensions ) {
 		case 'er2': return bindAnalyticSingleLattice( resolution, seed, R2_ALPHAS );
 		case 'f': return bindAnalyticPerDimensionLattices( resolution, seed, R4_ALPHAS );
 		case 'fr2': return bindAnalyticPerDimensionLattices( resolution, seed, R2_ALPHAS );
+		// H: FAST spatio-temporal atlas read with the PR's fastNoise(); the atlas is loaded by measure_common.js before the
+		// nodes are built. fastNoise() reads screenCoordinate itself; the seed only picks a fixed integer tile offset.
+		case 'h': return Fn( ( [ uvCoord, sampleIndex ] ) => fastNoise( globalThis.__FAST_ATLAS, new Vector2( seed * 13 % 128, seed * 29 % 128 ), uint( sampleIndex ) ) ); // eslint-disable-line no-unused-vars
 		case 'g': return bindAnalyticR4( resolution, seed );
 		case 'hsnr2': return bindHsnR2( resolution, seed );
 		default: return bindHierarchicalHashedWeyl( resolution, seed ); // PR head

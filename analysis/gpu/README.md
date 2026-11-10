@@ -35,7 +35,7 @@ This runs `figure.py` and `figure_variants.py` from the committed metrics JSON a
    - **bake**: `eb7187278b74` on `bhouston/three.js`, branch `ign-adoption`. The light map baker (`examples/jsm/lighting/vxgi/VXGIIrradiance.js`) was removed upstream, so it exists at neither the upstream base nor head.
 2. Apply the patches and copy the harness files:
    - base: `git apply patches/base.diff`; copy `harness/measure_common.js`, `measure_vxgi.html`, `measure_ssr.html` to `examples/` and `harness/MeasureWhiteNoise.js` to `examples/jsm/tsl/utils/`
-   - head: `git apply patches/head.diff`; copy the same three files to `examples/` and `MeasureWhiteNoise.js`, `MeasureVariants.js`, `MeasureVoidCluster.js`, `MeasureAnalyticR4.js`, `MeasureRNoiseR4.js` to `examples/jsm/tsl/utils/`
+   - head: `git apply patches/head.diff`; copy the same three files to `examples/` and `MeasureWhiteNoise.js`, `MeasureVariants.js`, `MeasureVoidCluster.js`, `MeasureAnalyticR4.js`, `MeasureRNoiseR4.js`, `FASTNoise.js` to `examples/jsm/tsl/utils/`. Variant H also needs the FAST atlas: copy `textures/fast/gauss1-ema01-spatio-temporal.png` (with its `.txt` and `LICENSE.txt`) from this repository to `examples/textures/noises/fast/`. The harness used the same file, byte for byte, from mrdoob/three.js#35244; it is not committed a second time here. `harness/FASTNoise.js` is that pull request's sampler, unchanged
    - bake: `git apply patches/bake.diff`; copy `measure_common.js` and `measure_bake.html` to `examples/` and `MeasureWhiteNoise.js` to `examples/jsm/tsl/utils/`
 
    The pages import `src/` directly; nothing under `build/` is generated.
@@ -53,6 +53,8 @@ This runs `figure.py` and `figure_variants.py` from the committed metrics JSON a
    node analysis/gpu/run.mjs analysis/gpu/jobs-r4-fps.json
    node analysis/gpu/run.mjs analysis/gpu/jobs-g.json          # variant G (the RNoise.js of bhouston/three.js#42)
    node analysis/gpu/run.mjs analysis/gpu/jobs-g-fps.json
+   node analysis/gpu/run.mjs analysis/gpu/jobs-h.json          # variant H (FAST textures, mrdoob/three.js#35244)
+   node analysis/gpu/run.mjs analysis/gpu/jobs-h-fps.json
    ```
 
    `jobs-raw.json` is the pre-TRAA white reference attempt described under Limits on the Results page (kept, unused); `jobs-stat.json` is a stationarity check with different warm-up lengths. Output goes to `analysis/gpu/raw/` (git-ignored), or to `$GPU_RAW`.

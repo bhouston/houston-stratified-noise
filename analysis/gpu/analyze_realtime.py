@@ -40,7 +40,7 @@ for fx in ('vxgi', 'ssr', 'ssr_only'):
         return dict(runs=runs, noise_of_run_mean=mean_noise, mean={k: float(np.mean([r[k] for r in runs])) for k in keys},
                     sd={k: float(np.std([r[k] for r in runs], ddof=1)) for k in keys})
 
-    for v in ('base', 'hsn', 'hash', 'ign', 'vc', 'hsnr2', 'e', 'er2', 'f', 'fr2', 'g'):
+    for v in ('base', 'hsn', 'hash', 'ign', 'vc', 'hsnr2', 'e', 'er2', 'f', 'fr2', 'g', 'h'):
         names = sorted(os.path.basename(p)[:-5] for p in glob.glob(d + v + '_r?.json'))
         if names: res['variants'][v] = summarize(names, ref, ref_noise)
     # white-noise sampler itself: its 4 x 1024-frame runs, noise/flicker only (it is the reference, so no bias)
@@ -56,11 +56,13 @@ for fx in ('vxgi', 'ssr', 'ssr_only'):
         if ctl: res['fps_hsn_control_in_vc_session'] = dict(runs=ctl, median=float(np.median(ctl)), min=min(ctl), max=max(ctl))
         # later sessions on a busier GPU: fps of each variant relative to the HSN control of the same round
         fps = lambda name: {os.path.basename(p)[len(name) + 2:-5]: json.load(open(p))['result']['fps'] for p in glob.glob(fps_dir + name + '_r?.json')}
-        for control, names in (('hsnctl', ['vc']), ('hsnctl2', ['hashctl2', 'e', 'er2', 'f', 'fr2']), ('hsnctl3', ['basectl3', 'hashctl3', 'g'])):
+        for control, names in (('hsnctl', ['vc']), ('hsnctl2', ['hashctl2', 'e', 'er2', 'f', 'fr2']), ('hsnctl3', ['basectl3', 'hashctl3', 'g']), ('hsnctl4', ['hashctl4', 'h'])):
             c = fps(control)
             for name in names:
                 f = fps(name)
                 if f: res.setdefault('fps_relative_to_hsn_control', {})[name] = dict(control=[c[r] for r in sorted(f)], runs=[f[r] for r in sorted(f)], ratios=[f[r] / c[r] for r in sorted(f)], median_ratio=float(np.median([f[r] / c[r] for r in sorted(f)])))
+    fast = sorted(glob.glob(d + 'h_r?.json'))
+    if fast: res['fast_atlas'] = dict(png_bytes=3025821, load_ms=[json.load(open(p))['result']['fastLoadMs'] for p in fast])
     vc = sorted(glob.glob(d + 'vc_r?.json'))
     if vc: res['vc_texture'] = dict(bytes=json.load(open(vc[0]))['result']['vcTextureBytes'], generate_ms=[json.load(open(p))['result']['vcGenerateMs'] for p in vc])
 

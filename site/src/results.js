@@ -122,6 +122,8 @@ document.getElementById( 'accumulated-body' ).innerHTML = `
 	<h3>16 and 32 frames accumulated (box average), then a Gaussian σ = 1 blur</h3>
 	${T( 'D', 12, { cols: windowCols( 12 ) } )}${T( 'D', 16, { cols: windowCols( 16 ) } )}${T( 'D', 18, { cols: windowCols( 18 ) } )}
 
+	<h3>In-engine, steady state after TRAA</h3>
+	<p>In SSR and VXGI under TRAA, ${S} is level with the FAST blue-noise textures on frame RMSE (VXGI 9.99 against 10.18, within run-to-run variation; SSR 2.982 against 2.981), at zero bytes against a 3.0 MB atlas. The error is distributed differently: in VXGI FAST has 19% lower bias while ${S} has 7% less temporal noise and 4% less flicker; in SSR ${S} has 15% lower bias while FAST has about 1% less noise and flicker. The plain hash with per-value steps also matches or beats FAST on RMSE. The flat-field gaps against FAST did not carry over to the engine, likely because TRAA and the denoiser are not the filter the FAST atlas is optimised for (untested). Scope: two effects, a static camera, one GPU, and FAST call sites written for this measurement.</p>
 	<h3>In-engine, steady state after TRAA: VXGI</h3>
 	<p class="caption">Three.js on a hardware GPU, mean ± SD over three runs of 256 frames, ×10⁻³, change against the previous sampler. Bias is measured against white noise through the same TRAA.</p>
 	${realtime( 'vxgi', 2, 3 )}

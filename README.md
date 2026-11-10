@@ -12,16 +12,50 @@ This repository exists so that every number and figure in the post can be reprod
 
 ## What the measurements say
 
-1. **The fix that matters is one integer Weyl step per value.** The previous Three.js SSR and VXGI samplers were biased because their values per pixel were not independent. Giving each value its own integer Weyl step fixes that, and every variant measured that does so removes the banding.
-2. **In the engine, the hierarchy's measured benefit is lower flicker.** A plain per-pixel hash with the same steps matches HSN on SSR within 2%. On VXGI, like for like with R2 steps (variant C against variant A), the hash is about 4% lower on RMSE (8.86 against 9.26) with about 24% more flicker (5.07 against 4.09). HSN costs four hashes per value against the hash's one, with no measurable frame-rate change.
-3. **It is not blue noise.** On a single frame it is isotropic and free of spectral peaks, like blue noise, but its low frequencies are only partly suppressed, and its error after a blur is worse than interleaved gradient noise (IGN), R2 and blue-noise textures.
-4. **IGN-based samplers are still better for one value per pixel.** Under exponential accumulation and a blur, animated IGN has about 1.5 times lower error, and IGN as a spatial phase with a golden-ratio Weyl step is also ahead (6.24 against 7.57).
+1. **In the engine it is level with FAST blue-noise textures, at zero bytes.** In SSR and VXGI under TRAA, HSN is level with the FAST blue-noise textures on frame RMSE (VXGI 9.99 against 10.18, within run-to-run variation; SSR 2.982 against 2.981), at zero bytes against a 3.0 MB atlas. The error is distributed differently: in VXGI FAST has 19% lower bias while HSN has 7% less temporal noise and 4% less flicker; in SSR HSN has 15% lower bias while FAST has about 1% less noise and flicker. The plain hash with per-value steps also matches or beats FAST on RMSE. The flat-field gaps against FAST did not carry over to the engine, likely because TRAA and the denoiser are not the filter the FAST atlas is optimised for (untested). Scope: two effects, a static camera, one GPU, and FAST call sites written for this measurement.
+2. **The fix that matters is one integer Weyl step per value.** The previous Three.js SSR and VXGI samplers were biased because their values per pixel were not independent. Giving each value its own integer Weyl step fixes that, and every variant measured that does so removes the banding.
+3. **The hierarchy's measured in-engine benefit over a plain hash is lower flicker.** A plain per-pixel hash with the same steps matches HSN on SSR within 2%. On VXGI, like for like with R2 steps (variant C against variant A), the hash is about 4% lower on RMSE (8.86 against 9.26) with about 24% more flicker (5.07 against 4.09). HSN costs four hashes per value against the hash's one, with no measurable frame-rate change.
+4. **It is not blue noise.** On a single frame it is isotropic and free of spectral peaks, like blue noise, but its low frequencies are only partly suppressed, and its error after a blur is worse than interleaved gradient noise (IGN), R2 and blue-noise textures.
+5. **IGN-based samplers are still better for one value per pixel.** Under exponential accumulation and a blur, animated IGN has about 1.5 times lower error, and IGN as a spatial phase with a golden-ratio Weyl step is also ahead (6.24 against 7.57).
 
 Terms used throughout: **values per pixel** is how many random numbers a pixel draws per frame (1, 2 or 4, each with its own seed and step); **frames accumulated** is the length of the temporal history.
 
 ## Results: accumulated over time
 
-Samplers like this are used under temporal accumulation: TRAA or an exponential moving average over roughly 16 to 32 frames, with a small spatial filter. These tables are excerpts of `results/temporal/tables_D.md`: RMSE ×1000 on a static flat field in a CPU model of the shader arithmetic, lower is better. Motion and disocclusion were not measured.
+Samplers like this are used under temporal accumulation: TRAA or an exponential moving average over roughly 16 to 32 frames, with a small spatial filter. Motion and disocclusion were not measured.
+
+### In Three.js on a real GPU, steady state after TRAA
+
+Excerpts of `results/gpu/realtime_metrics.json`: mean of three runs of 256 frames, ×10⁻³, change against the previous sampler; Apple M3, hardware WebGPU. H is the FAST spatio-temporal atlas of mrdoob/three.js#35244; A to D are simpler fixes run through the same harness. The shipped HSN row uses the first two R4 steps for VXGI while A, B and D use R2 steps, so compare A with C for a like-for-like step set.
+
+VXGI:
+
+| Sampler | RMSE | Bias | Temporal noise | Flicker |
+| --- | ---: | ---: | ---: | ---: |
+| Before (IGN pair) | 17.70 | 15.94 | 7.66 | 3.534 |
+| **HSN** (pull request head) | 9.99 (−43.6%) | 5.26 (−67.0%) | 8.49 (+10.8%) | 4.140 (+17.2%) |
+| H: FAST blue-noise texture (3.0 MB atlas) | 10.18 (−42.5%) | 4.42 (−72.3%) | 9.17 (+19.7%) | 4.321 (+22.3%) |
+| A: Hash + R_d | 8.86 (−49.9%) | 4.29 (−73.1%) | 7.75 (+1.2%) | 5.067 (+43.4%) |
+| B: IGN + R_d | 9.85 (−44.4%) | 7.03 (−55.9%) | 6.90 (−9.9%) | 3.837 (+8.6%) |
+| C: HSN, R2 steps | 9.26 (−47.7%) | 5.44 (−65.9%) | 7.49 (−2.2%) | 4.094 (+15.9%) |
+| D: Void-and-cluster + R_d | 10.66 (−39.8%) | 5.97 (−62.5%) | 8.83 (+15.2%) | 4.027 (+14.0%) |
+
+SSR, denoised:
+
+| Sampler | RMSE | Bias | Temporal noise | Flicker |
+| --- | ---: | ---: | ---: | ---: |
+| Before (analytic R2) | 3.282 | 1.715 | 2.798 | 2.461 |
+| **HSN** (pull request head) | 2.982 (−9.1%) | 0.659 (−61.5%) | 2.908 (+3.9%) | 2.463 (+0.1%) |
+| H: FAST blue-noise texture (3.0 MB atlas) | 2.981 (−9.2%) | 0.773 (−54.9%) | 2.880 (+2.9%) | 2.448 (−0.5%) |
+| A: Hash + R_d | 3.000 (−8.6%) | 0.482 (−71.9%) | 2.961 (+5.8%) | 2.481 (+0.8%) |
+| B: IGN + R_d | 3.335 (+1.6%) | 1.039 (−39.4%) | 3.169 (+13.2%) | 2.699 (+9.7%) |
+| D: Void-and-cluster + R_d | 3.036 (−7.5%) | 0.676 (−60.6%) | 2.959 (+5.8%) | 2.459 (−0.1%) |
+
+Bias is measured against white noise through the same TRAA and denoiser, which may favour the plain hash in the bias ranking. There is one static scene and camera per effect and one GPU.
+
+### CPU model
+
+These tables are excerpts of `results/temporal/tables_D.md`: RMSE ×1000 on a static flat field in a CPU model of the shader arithmetic, lower is better.
 
 Exponential moving average, α = 0.1 (about 19 effective frames), then a Gaussian σ = 1 blur:
 
@@ -60,33 +94,6 @@ Exponential moving average, α = 0.1 (about 19 effective frames), then a Gaussia
 | White noise | 21.1 | 19.7 | 22.8 |
 
 The one-value column is the threshold tests, where HSN matches or beats FAST and STBN; on the smooth one-value test functions FAST is about 30% better and STBN about 14%. The animated IGN error for two and four values per pixel is bias from its correlated values. For two values a plain hash with the same steps ties HSN once about four frames are accumulated; for four values HSN keeps a small lead (4–14% depending on the window, about 14% at 32 frames). Per-pixel convergence comes from the Weyl steps, not from the hierarchy.
-
-### In Three.js on a real GPU, steady state after TRAA
-
-Excerpts of `results/gpu/realtime_metrics.json`: mean of three runs of 256 frames, ×10⁻³, change against the previous sampler; Apple M3, hardware WebGPU. A to D are simpler fixes run through the same harness. The shipped HSN row uses the first two R4 steps for VXGI while A, B and D use R2 steps, so compare A with C for a like-for-like step set.
-
-VXGI:
-
-| Sampler | RMSE | Bias | Temporal noise | Flicker |
-| --- | ---: | ---: | ---: | ---: |
-| Before (IGN pair) | 17.70 | 15.94 | 7.66 | 3.534 |
-| **HSN** (pull request head) | 9.99 (−43.6%) | 5.26 (−67.0%) | 8.49 (+10.8%) | 4.140 (+17.2%) |
-| A: Hash + R_d | 8.86 (−49.9%) | 4.29 (−73.1%) | 7.75 (+1.2%) | 5.067 (+43.4%) |
-| B: IGN + R_d | 9.85 (−44.4%) | 7.03 (−55.9%) | 6.90 (−9.9%) | 3.837 (+8.6%) |
-| C: HSN, R2 steps | 9.26 (−47.7%) | 5.44 (−65.9%) | 7.49 (−2.2%) | 4.094 (+15.9%) |
-| D: Void-and-cluster + R_d | 10.66 (−39.8%) | 5.97 (−62.5%) | 8.83 (+15.2%) | 4.027 (+14.0%) |
-
-SSR, denoised:
-
-| Sampler | RMSE | Bias | Temporal noise | Flicker |
-| --- | ---: | ---: | ---: | ---: |
-| Before (analytic R2) | 3.282 | 1.715 | 2.798 | 2.461 |
-| **HSN** (pull request head) | 2.982 (−9.1%) | 0.659 (−61.5%) | 2.908 (+3.9%) | 2.463 (+0.1%) |
-| A: Hash + R_d | 3.000 (−8.6%) | 0.482 (−71.9%) | 2.961 (+5.8%) | 2.481 (+0.8%) |
-| B: IGN + R_d | 3.335 (+1.6%) | 1.039 (−39.4%) | 3.169 (+13.2%) | 2.699 (+9.7%) |
-| D: Void-and-cluster + R_d | 3.036 (−7.5%) | 0.676 (−60.6%) | 2.959 (+5.8%) | 2.459 (−0.1%) |
-
-Bias is measured against white noise through the same TRAA and denoiser, which may favour the plain hash in the bias ranking. There is one static scene and camera per effect and one GPU.
 
 ## Results: single frame and short histories
 
