@@ -1,0 +1,68 @@
+:root {
+	color-scheme: light dark;
+	--bg: #fcfbf7; --panel: #ffffff; --ink: #111111; --muted: #5a5a5a; --line: #dedbd3; --accent: #2f6fd0; --mark: #eaf1fc;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root { --bg: #15161a; --panel: #1e2026; --ink: #ececec; --muted: #a2a5ad; --line: #353842; --accent: #7fb0ff; --mark: #1f2c44; }
+}
+
+* { box-sizing: border-box; }
+
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.55 system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif; }
+
+header, main, footer { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+
+header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 24px; padding-top: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--line); }
+header .title { font-weight: 700; font-size: 1.1rem; color: var(--ink); text-decoration: none; }
+nav { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+nav a[aria-current] { color: var(--ink); font-weight: 600; text-decoration: none; }
+
+footer { margin-top: 48px; padding-top: 16px; padding-bottom: 32px; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.9rem; }
+
+a { color: var(--accent); }
+h1 { font-size: 1.9rem; line-height: 1.2; margin: 32px 0 8px; }
+h2 { font-size: 1.4rem; margin: 44px 0 8px; padding-top: 8px; border-top: 1px solid var(--line); }
+h3 { font-size: 1.08rem; margin: 30px 0 6px; }
+p, ul, ol { max-width: 78ch; }
+li { margin: 4px 0; }
+.lede { font-size: 1.12rem; }
+.muted, figcaption { color: var(--muted); }
+.pending { border: 1px dashed var(--line); border-radius: 8px; padding: 14px 16px; color: var(--muted); }
+
+code, pre { font: 0.86em/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+code { background: var(--mark); padding: 1px 5px; border-radius: 4px; }
+pre { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; overflow-x: auto; tab-size: 2; }
+pre code { background: none; padding: 0; font-size: 1em; }
+.cmd { margin: 6px 0; font-size: 0.9rem; color: var(--muted); }
+
+figure { margin: 18px 0 26px; }
+figure img { display: block; width: 100%; height: auto; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+figcaption { margin-top: 8px; max-width: 78ch; }
+
+.table { overflow-x: auto; margin: 10px 0 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-size: 0.86rem; font-variant-numeric: tabular-nums; }
+th, td { padding: 5px 10px; text-align: right; white-space: nowrap; border-bottom: 1px solid var(--line); }
+th { font-weight: 600; white-space: normal; vertical-align: bottom; min-width: 5.5em; }
+th:first-child, td:first-child { text-align: left; }
+tr:last-child td { border-bottom: 0; }
+tr.self td { background: var(--mark); font-weight: 600; }
+
+/* explorer */
+.controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 20px; margin: 18px 0; padding: 14px 16px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+.controls label { display: flex; flex-direction: column; gap: 2px; font-size: 0.86rem; color: var(--muted); }
+.controls label span b { color: var(--ink); font-variant-numeric: tabular-nums; }
+.controls select, .controls input, .controls button { font: inherit; color: var(--ink); }
+.controls select, .controls button { padding: 4px 6px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; }
+.controls input[type=range] { width: 100%; accent-color: var(--accent); }
+.controls .row { display: flex; gap: 8px; align-items: center; }
+.panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
+.panel { padding: 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; min-width: 0; }
+.panel h3 { margin: 0 0 8px; }
+.views { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.views figure { margin: 0; }
+.views canvas { display: block; width: 100%; aspect-ratio: 1; image-rendering: pixelated; border: 1px solid var(--line); background: #000; }
+.views figcaption { margin-top: 3px; font-size: 0.8rem; }
+.stats { margin: 10px 0 0; display: grid; grid-template-columns: 1fr auto; gap: 2px 12px; font-size: 0.88rem; }
+.stats dt { color: var(--muted); }
+.stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }

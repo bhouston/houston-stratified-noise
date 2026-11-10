@@ -1,0 +1,173 @@
+{
+	"headline": "{S} is not blue noise. It is isotropic, peak-free, perfectly uniform noise whose low frequencies are suppressed by 12 to 18 dB relative to white. Real blue-noise masks suppress the same band by 30 to 50 dB, and the IGN and R2 lattices by 17 to 27 dB. Under every spatial filter tested {S} beats white noise and loses to IGN, R2 and all three blue-noise textures. What it has that IGN and R2 lack is a spectrum with no peaks and no direction; what it has that blue-noise textures lack is zero bytes and exact stratification on aligned 2, 4 and 8 pixel blocks.",
+	"figures": {
+		"swatches": "the same 128×128 crop of each method at 2×. {S} looks like fine-grained white noise: none of the diagonal weave of IGN and R2 or the grid of Bayer, but visibly lumpier than the three blue-noise textures. The 32-pixel seams of the Three.js analytic noise are visible.",
+		"swatches-threshold": "the same crops binarized at 0.5. {S}'s black pixels form more short runs and small clumps than the blue-noise masks, far fewer than white. IGN and R2 form regular weaves; Bayer is a checkerboard.",
+		"spectra-2d": "2D power spectra on one log scale. {S} is a smooth, round, shallow dip at the centre with a flat floor everywhere else. Blue-noise textures have a deep black disc out to about 0.2 cycles/pixel. IGN and R2 are grids of bright points with dark gaps. No lines or dots appear in {S} at multiples of 1/8 cycle/pixel.",
+		"radial-power": "radially averaged power in dB against white. {S} rises smoothly from −16 dB at 1/64 cycle/pixel through −9 dB at 1/16 and −5 dB at 1/8 to white level by about 0.3, with no bump. The blue-noise textures sit at −30 dB or lower at 1/8. IGN and R2 average −15 to −20 dB over the low band but as spikes.",
+		"anisotropy": "Ulichney anisotropy. {S}, the white hashes and the blue-noise textures all sit on the −9 dB line expected for isotropic noise averaged over 8 periodograms. IGN and R2 are 10 to 35 dB above it at most frequencies. The fract(sin) hash sits about 1.5 dB above the isotropic line. Bayer and the Three.js noise have mostly empty rings, so their curves are broken.",
+		"filtered-error": "error remaining after a Gaussian blur, value test and threshold test. {S} is the highest curve apart from the white hashes at every width in the value test. In the threshold test it is the highest non-white curve up to σ=4 and converges with the blue-noise textures at σ=6 to 8.",
+		"threshold-error-by-level": "threshold test at σ=2 split by level. {S}'s error is nearly flat across levels (0.017 to 0.026), about 1.5× IGN and 2 to 3× the blue-noise textures at every level; it has no weak level.",
+		"window-stratification": "RMS error of w×w window means relative to white. On aligned windows {S} is the best non-Bayer method at every size. At arbitrary offsets it is the worst non-white method at every size.",
+		"window-offsets": "the same for {S} split by where the window starts inside the tile. 2×2 windows that straddle block boundaries in both axes are white noise (0.96 to 1.00). 8×8 windows go from 0.12 aligned to 0.41 to 0.58 at odd offsets.",
+		"autocorrelation": "correlation at lags up to ±6. {S} has a small negative plus-shape at lag 1 only. Blue-noise textures have a deeper negative ring at lag 1 including diagonals, then a faint positive ring. IGN, R2 and Bayer are strongly correlated out to every lag shown.",
+		"histograms": "64-bin histograms. {S}, R2, Bayer and the textures are flat; the white hashes show sampling noise; the Three.js analytic noise is visibly uneven."
+	},
+	"reading": [
+		{
+			"title": "Where {S} resembles blue noise",
+			"items": [
+				"**Isotropy.** Mean anisotropy −9.1 dB, identical to white noise and to all three blue-noise textures (−9.0 to −9.1). IGN is +13.8 dB, R2 +14.1 dB.",
+				"**No spectral peaks.** Largest bin of a 50% mask on 128²: {S} 0.030%, white 0.017%, blue-noise textures 0.022 to 0.024%, IGN 17.8%, R2 24.6%, Bayer 100%.",
+				"**No 8-pixel spectral lines.** Power on the 63 bins at multiples of 1/8 cycle/pixel is 0.102% of the total against 0.096% for white; with 64 seeds the mean lattice bin is 1.06× white and the largest is 1.70×, below the largest ordinary bin (2.19×). The tiling does not show up as a spectral line or comb. It shows up as position-dependent statistics instead (see below).",
+				"**Uniform histogram.** Every 64-bin count is exact (χ² = 0), like a blue-noise permutation texture and unlike any hash. At 256 bins it behaves like white noise (χ² 218 on 255 degrees of freedom).",
+				"**Nearest neighbours are anti-correlated**: −0.16 horizontally and vertically against −0.19 to −0.28 for blue noise.",
+				"**Wide-filter threshold error.** At σ=6 to 8, thresholded {S} (1.71×10⁻³ at σ=8) is level with Peters (1.60), void-and-cluster (1.99) and FAST (2.36)."
+			]
+		},
+		{
+			"title": "Where it differs from blue noise",
+			"items": [
+				"**Depth of the low-frequency hole.** Power below 1/16 cycle/pixel is 6.5% of white for {S} against 0.01 to 0.03% for the blue-noise textures: at least 200 times more low-frequency energy. At 1/8 cycle/pixel {S} is −5 dB and blue noise is −26 to −31 dB. {S}'s lowest-frequency level is −17 dB, matching the theoretical floor of 1/64 (−18.1 dB) set by the white per-tile phase. An 8×8 tile cannot do better than that.",
+				"**No blue-noise peak or plateau.** The spectrum climbs gradually to white level; there is no principal frequency.",
+				"**Filtered value error.** σ=1: 49.6×10⁻³ against 14.1 to 21.9 (2.3 to 3.5× worse). σ=2: 15.8 against 0.77 to 1.39 (11 to 20× worse). σ=4: 4.84 against 0.10 to 0.37 (13 to 48× worse).",
+				"**Filtered threshold error.** σ=1: 71.2 against 38.2 to 44.8 (1.6 to 1.9× worse). σ=2: 22.8 against 8.9 to 11.6 (2.0 to 2.6× worse). σ=4: 6.5 against 3.4 to 5.0 (1.3 to 1.9× worse). 3×3 box: 0.70× white against 0.51 to 0.53×. 5×5 box: 0.57× against 0.41 to 0.45×.",
+				"**Anti-correlation exists only inside 2×2 blocks.** Horizontal neighbours in the same 2×2 block correlate at −0.31; neighbours across a block boundary at −0.02, 0.00 and 0.00. Half of all neighbour pairs are effectively white. Diagonal correlation is −0.04 against −0.12 to −0.16 for blue noise.",
+				"**Stratification is tied to the grid.** Aligned-window error relative to white is 0.50 / 0.25 / 0.125 / 0.127 for 2, 4, 8, 16 pixel windows, better than blue noise (0.55 / 0.42 / 0.28 / 0.20). Over all offsets it is 0.80 / 0.62 / 0.46 / 0.34, which is 1.2 to 1.7× worse than the blue-noise textures, and 1.6×, 2.5×, 3.7× and 2.7× worse than its own aligned case. The worst offsets reach 1.00 / 0.78 / 0.58 / 0.43. Blue noise, IGN and R2 do not care about the offset."
+			]
+		},
+		{
+			"title": "Against IGN",
+			"items": [
+				"{S} wins: isotropy (−9 dB against +14 dB), no peaks (0.03% against 17.8%), exact histogram, aligned windows (0.25 against 0.49 at 4×4; 0.125 against 0.30 at 8×8), no float precision dependence.",
+				"{S} loses: every filtered-error number. Value test 1.7× worse at σ=1, 1.8× at σ=2, 1.6× at σ=4. Threshold test 1.6×, 1.5×, 1.4×. 3×3 box threshold 0.70× white against 0.41×; 5×5 box 0.57× against 0.39×. IGN is the best or near-best method tested under small box filters, which is what it was designed for. Arbitrary-offset windows: 0.80 / 0.62 / 0.46 / 0.34 against 0.58 / 0.49 / 0.30 / 0.21. Low-frequency power below 1/16 cycle/pixel: 6.5% of white against 2.7%."
+			]
+		},
+		{
+			"title": "Against R2 (and the Three.js analytic noise)",
+			"items": [
+				"{S} wins: isotropy and peaks as for IGN; aligned 8×8 and 16×16 windows (0.125 against 0.27). Against the Three.js version specifically: no 32-pixel seams (7.8% of that noise's power sits on the 1/8-cycle lattice), 65,472 distinct values in a 256² crop against 1,024, and no directionally constant extra channels.",
+				"{S} loses: value test 1.8×, 2.3× and 2.8× worse at σ=1, 2, 4; threshold test 1.7×, 2.1×, 2.6×; arbitrary-offset windows at every size. R2 has the lowest wide-filter threshold error of anything tested (0.65×10⁻³ at σ=8)."
+			]
+		},
+		{
+			"title": "Against white noise (PCG3D, {S}'s own hash, fract(sin), hash12)",
+			"items": [
+				"{S} wins everything measured: value test 0.61× / 0.39× / 0.24× at σ=1, 2, 4; threshold test 0.62× / 0.40× / 0.22×; 3×3 box 0.69×; 5×5 box 0.56×; windows 0.80 to 0.34× even at arbitrary offsets; exact 64-bin histogram.",
+				"Cost: four hashes per sample instead of one.",
+				"The four white hashes are indistinguishable on every filter metric. fract(sin) is measurably worse on quality: mean 0.4978, anisotropy −7.6 dB instead of −9.0, and only 4,203 distinct values in the first 256² crop at screen coordinates 1024 to 1279 (float32)."
+			]
+		},
+		{
+			"title": "Against Bayer 8×8",
+			"items": [
+				"{S} wins: no pattern. Bayer puts 100% of a 50% mask's power in one bin and correlates at +1.00 at lag 8.",
+				"{S} loses: Bayer is exactly stratified at every offset for 8×8 and larger windows ({S} only when aligned), and has lower filtered error than {S} at every Gaussian width (value test σ=1: 13.9 against 49.6; σ=4: 0.05 against 4.84) and under the 3×3 box (the 5×5 box threshold test is a tie). Scrambling and phase-shifting Bayer into {S} buys the flat isotropic spectrum and pays for it with a 1.8 to 100× increase in Gaussian-filtered error. This is the central trade of the design."
+			]
+		}
+	],
+	"surprises": [
+		"Among the eleven main methods, {S} is the worst non-white one on filtered error at every Gaussian width up to 4 pixels and under 3×3 and 5×5 boxes, in both value and threshold tests (Bayer ties it on the 5×5 box threshold test). Only the extra channels of the old Three.js analytic noise are worse.",
+		"The 2×2 windows that straddle block boundaries in both axes (one quarter of all positions) have white-noise error (0.96 to 1.00). Stratification does not degrade gracefully off the grid; it disappears at the finest scale.",
+		"Thresholding closes most of the gap to blue noise at wide filters. Blue-noise masks are 11 to 48× better than {S} on continuous values at σ ≥ 2 but only 1.3 to 2.6× better once thresholded, and level at σ ≥ 6.",
+		"The 8×8 tiling leaves no spectral line at all. A power spectrum is the wrong tool to see it; the window-offset map is the right one.",
+		"The old Three.js \"Analytic R²\" second channel is constant along diagonals by an algebraic identity of the plastic number, which is a sufficient explanation for the diagonal banding in the PR screenshots, independent of anything about {S}.",
+		"Simple void-and-cluster (about 25 s for 256² in numpy) beats FAST's single slices on the single-frame value test (0.77 against 1.39 ×10⁻³ at σ=2). FAST is optimized for space and time jointly, so this is expected, but it means \"FAST\" is not the strictest single-frame reference."
+	],
+	"caveats": [
+		"Flat targets only. Every filtered-error test integrates a constant. Edges, gradients, and edge-stopping or bilateral denoisers are not covered, and those are where lattice noises such as IGN and R2 alias.",
+		"RMS error is not perception. IGN and R2 concentrate their residual in a few directions and frequencies, which reads as visible weave or banding; {S}'s residual is isotropic and unstructured. The metrics here score those the same. No contrast-sensitivity weighting was applied.",
+		"Gaussian blurs use a kernel truncated at 4σ. Thresholds are 16 evenly spaced levels (t = (i+0.5)/16); the threshold test uses 4 realizations, everything else 8.",
+		"Deterministic lattices (IGN, R2, Bayer) have no real ensemble: their eight \"realizations\" are crops with the same spectrum. Their spectra are computed without a window on a 256² domain they are not periodic on, so peaks are slightly smeared; a Hann-windowed column is given for the largest-bin measure. Textures are analysed at their native period (FAST at 128², so its bins are 4× coarser and its largest-bin fraction is not comparable with 256² rows; use the 128² crop column).",
+		"Largest-bin fractions depend on FFT size and on how many periodograms are averaged. Compare methods within a column only.",
+		"IGN and the float hashes are evaluated at integer coordinates between 992 and 2336. Three.js passes pixel centres (x+0.5), which shifts IGN's phase but not its statistics. fract(sin) depends on the platform's `sin`; numpy float32 `sin` is not any particular GPU's.",
+		"PCG was run as `pcg3d` only (not `pcg2d`). NVIDIA STBN was not downloaded. R2 was run in float64; the fixed-point `r2Weyl` from bhouston/three.js PR #117 is mathematically the same mask and was not run separately.",
+		"The window test measures means of values. The equivalent count guarantee for thresholded masks (an aligned 8×8 tile has within ±1 of 64t pixels below t) was not tested separately.",
+		"Bayer's very low errors rely on the filter being wider than its 8-pixel period and on a flat target."
+	],
+	"gaps": [
+		"Repeat the filtered tests on non-flat targets (ramp, edge, textured albedo) and with an edge-aware à-trous filter.",
+		"Add a contrast-sensitivity-weighted error so that structured residuals (IGN, R2, Bayer) are penalized the way the eye penalizes them. This is the measurement most likely to change the ranking, in either direction.",
+		"Sub-pixel jitter and reprojection break the alignment {S}'s guarantees depend on. The arbitrary-offset numbers here are the relevant ones for any pipeline with TAA jitter, half-resolution tracing or upscaling, and should be the ones quoted.",
+		"The −18 dB floor comes from the white per-tile phase and the 8-pixel tile. A fourth level (16×16 tiles) would lower it to −24 dB for one more hash; giving neighbouring blocks correlated scrambles could add anti-correlation across block boundaries, which is where {S} currently behaves like white noise. Neither was tried."
+	],
+	"protocol": "Pixel coordinates are integers (no +0.5). Seeded methods use seeds 1..8 on the crop at (1024,1024); unseeded methods use eight 256×256 crops with origins (1024+256a, 1024+256b), all tile-aligned, inside a roughly 2300×2300 screen. Every field is generated with a 32-pixel margin so filters never see an artificial seam.",
+	"methods": [
+		[
+			"{S}",
+			"Port of `examples/jsm/tsl/utils/HierarchicalHashedWeyl.js` from three.js PR #35429, index 0, default step. `hash(v)`: `v=(v^v>>16)*0x21f0aaad; v=(v^v>>15)*0x735a2d97; v^v>>15`. `pixelHash(x,y,s)=hash(x*0x9e3779b1 ^ y*0x85ebca77 ^ s)`. For level 0..2: `q=pixelHash(x>>(l+1), y>>(l+1), seed ^ ((l+1)*0x632be5ab))`, `a=(x>>l)&1`, `b=(y>>l)&1`, `low = (q&4) ? a : b`, `rank |= ((((a^b)<<1)|low) ^ (q&3)) << (30-2l)`. Output `(rank + pixelHash(x>>3,y>>3,seed^0x02e5be93) + index*step) >> 8) / 2^24`.",
+			"uint32, wraps",
+			"seeds 1..8"
+		],
+		[
+			"White (PCG3D)",
+			"Jarzynski and Olano `pcg3d(x, y, seed)`, x output, top 24 bits.",
+			"uint32",
+			"seeds 1..8"
+		],
+		[
+			"White ({S}'s own hash)",
+			"`pixelHash(x,y,seed) >> 8 / 2^24`. Tables only.",
+			"uint32",
+			"seeds 1..8"
+		],
+		[
+			"fract(sin) hash",
+			"`fract(sin(x*12.9898 + y*78.233) * 43758.5453)`",
+			"float32, libm `sin`",
+			"8 crops"
+		],
+		[
+			"Hoskins hash12",
+			"`p3=fract(p.xyx*.1031); p3+=dot(p3,p3.yzx+33.33); fract((p3.x+p3.y)*p3.z)`",
+			"float32",
+			"8 crops"
+		],
+		[
+			"IGN",
+			"`fract(52.9829189*fract(0.06711056*x + 0.00583715*y))`",
+			"float32",
+			"8 crops"
+		],
+		[
+			"R2 (Roberts)",
+			"`fract(x/g + y/g²)`, g = 1.32471795724474602596",
+			"float64",
+			"8 crops"
+		],
+		[
+			"Three.js Analytic R²",
+			"`bindAnalyticNoise` from `examples/jsm/tsl/utils/RNoise.js` on three.js `dev`, the noise SSR used before the PR. `c = (pixel + floor(fract((index+seed)*(0.7548776662, 0.5698402910))*32)) mod 32`, `t = c.x/g + c.y/g² + seed`, channel x = `fract(t*g*(1/g))`. Seed 47 (SSR's ray-march seed).",
+			"float32",
+			"index 0..7"
+		],
+		[
+			"Bayer 8×8",
+			"Standard recursive matrix (M2 = [[0,2],[3,1]]), value `(index+0.5)/64`.",
+			"exact",
+			"8 crops (identical)"
+		],
+		[
+			"Void-and-cluster 256²",
+			"Own generator, Ulichney 1993: toroidal Gaussian σ=1.5, 10% random initial pixels, relax, then rank. Value `(rank+0.5)/N²`. 128² and 64² versions (tiled) are in the tables only.",
+			"float64",
+			"seeds 1..8"
+		],
+		[
+			"Peters blue noise 256²",
+			"Christoph Peters' free blue noise textures (CC0), `Data/256_256/HDR_L_0..7.png`, 16-bit, value `(v+0.5)/65536`.",
+			"texture",
+			"8 textures"
+		],
+		[
+			"FAST (EA) 128²",
+			"`gauss1-ema01-spatial.png` from three.js PR #35244 (EA FastNoise, real_uniform_gauss1_0_exp0101_product), B channel of the left 128 columns, slices 0,4,..,28, value `(v+0.5)/256`, tiled. The spatio-temporal atlas is in the tables only.",
+			"texture, 8-bit",
+			"8 slices"
+		]
+	],
+	"definitions": [
+		"**\"Analytic R²\" in Three.js is Roberts' mask, but wrapped to a 32×32 tile** and computed in float32 around t ≈ 47 to 110. It has 1,024 distinct values and visible seams every 32 pixels. Its x channel otherwise behaves like R2.",
+		"**There is no separate \"analytic R4\" spatial noise.** `bindAnalyticNoise` returns four channels that are all `fract(c_k · t)` of the same scalar t, with c = 1, 2/g, 3g·0.4198754210, 4/g². Because 1/g² + 1/g³ = 1 exactly, channel y is `fract(0.1397·(x − y) + const)`: constant along diagonals. Channels z and w are near-constant along (0,1) and (1,1). They are included as extra table rows (`ch.1..3`); channel y is worse than white noise under a σ=1 blur (1.40×). `R4_STEPS` in {S} are temporal steps only and have no single-frame meaning, so R4 is left to the multi-dimensional analysis."
+	]
+}

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Explorer · %name%</title>
+	<meta name="description" content="Compare %short% with IGN, R2, Bayer and white-noise hashes interactively: pattern, threshold, power spectrum, blur and temporal accumulation.">
+	<script type="module" src="./src/explorer.js"></script>
+</head>
+<body>
+<main>
+	<h1>Explorer</h1>
+	<p>Each noise is evaluated on the CPU by the modules in <code>src/noise/</code>, the same code the self-check verifies, on a 256×256 crop at screen coordinate (1024, 1024). The result view accumulates frames 0 to the chosen frame, blurs the accumulation, and shows its error against the exact answer (0.5 for the value, the threshold t for the thresholded mask), amplified by the gain. Blue-noise textures are not included here; they are in the <a href="results.html#spatial">spatial results</a>.</p>
+
+	<form class="controls" id="controls" onsubmit="return false">
+		<label><span>Noise A</span><select id="a"></select></label>
+		<label><span>Noise B</span><select id="b"></select></label>
+		<label><span>Seed <b id="seed-value"></b></span><input id="seed" type="range" min="1" max="16" step="1" value="1"></label>
+		<label><span>Integrand</span><select id="integrand"><option value="value">Noise value (target 0.5)</option><option value="threshold">Thresholded, noise &lt; t (target t)</option></select></label>
+		<label><span>Threshold t <b id="threshold-value"></b></span><input id="threshold" type="range" min="0.05" max="0.95" step="0.01" value="0.5"></label>
+		<label><span>Gaussian blur σ <b id="sigma-value"></b></span><input id="sigma" type="range" min="0" max="8" step="0.25" value="1"></label>
+		<label><span>Temporal accumulation</span><select id="mode"><option value="mean">Average of all frames so far</option><option value="ema">Exponential moving average (EMA)</option></select></label>
+		<label><span>EMA α <b id="alpha-value"></b></span><input id="alpha" type="range" min="0.02" max="1" step="0.01" value="0.1"></label>
+		<label><span>Frame <b id="frame-value"></b></span><span class="row"><input id="frame" type="range" min="0" max="255" step="1" value="0"><button id="play" type="button">Play</button></span></label>
+		<label><span>Error gain in the result view</span><select id="gain"><option>1</option><option selected>4</option><option>16</option><option>64</option></select></label>
+	</form>
+
+	<div class="panels" id="panels"></div>
+
+	<p class="muted">Notes. The Gaussian kernel is truncated at 3σ (the spatial analysis truncates at 4σ). Noises marked static ignore the frame index, so accumulation does not change them. The white noises draw an independent frame per index. "Aligned 8×8 tiles exactly stratified" counts tiles of the current frame whose 64 values fall one in each bin of width 1/64. The spectrum is the power of the current frame's values with the mean removed, on a log scale from 0.001× to about 30× the white-noise level, low frequencies at the centre.</p>
+</main>
+</body>
+</html>
