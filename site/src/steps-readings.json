@@ -1,0 +1,27 @@
+{
+	"What was done": [
+		"**Candidates** (`search.py cands`): 29 (1-value), 393 (2-value) and 5,745 (4-value) algebraic constructions plus 40,000 random odd-uint32 vectors per dimension count, ranked by wrap-around L2 discrepancy at 39 log-spaced N in 4..1024 (full set, worst component, worst pair). 30 / 36 / 34 were kept for the harness. Constructions: noble numbers, metallic means, square roots of primes, cubic and quintic Pisot fields, totally real cubic and quintic fields, Roberts R3, R5, R6, R7, Korobov generators times the golden step, and every rationally independent subset of a 29-number 1-value pool. Random components were pre-filtered to q·||q·a|| >= 0.2 for q <= 1000. All steps are odd.",
+		"**Selection** (`search.py select`): selection integrands, {S} phase and hash phase, 19 step-dependent metrics. Rule fixed in the file header before any harness number existed.",
+		"**Validation** (`search.py validate`): held-out integrands (`heldout.py`, written and frozen first: 15 / 19 / 28 integrands), five different seed and region configurations."
+	],
+	"Findings": [
+		"**One value: golden stays.** Four noble numbers have a slightly lower mean (J 0.94–0.98) but each is 15–28% worse at some N, usually N=8. That is trading one N for another, not an improvement.",
+		"**Two values: `R2_STEPS` stays.** The best alternatives (noble[0;4,2,1…] with silver, J 0.93; two random pairs, J 0.94–0.95) are 11–23% better at 16 frames and under EMA + blur, but 8–27% worse at N=4, 4-frame windows or N=256. None was validated, because none was eligible.",
+		"**Four values: the candidate is much better per pixel and mixed under filtering** (held-out, {S} phase, new/old): per pixel: 0.92 / 1.04 / 0.84 / 0.66 / 0.54 / 0.57 / 0.55 at N = 4 / 8 / 16 / 32 / 64 / 256 / 1024 (geometric mean 0.71; 0.68 over 39 log-spaced N, worse only at N = 7 and 8); EMA 0.1 + blur: 0.88–0.91; 16 frames + blur: 0.83–0.86; 4 frames + blur: 1.01–1.09; 8 frames + blur: 1.04–1.07. Seed-to-seed standard deviation of every ratio is at most 0.011, so all of these are real. Six of 19 metrics regress by more than 3%, so it fails the bar. The worst pair chi-square drops from 6.43 to 0.52 (the five lines are gone; pair 1-3 still shows faint rows, relation −4·a1 − 13·a3 to 0.0012).",
+		"**The held-out set was kinder to the candidate than the selection set** (J 0.854 vs 0.976), so the gain is not overfitting; if anything `R4_STEPS` was favoured by the original integrands.",
+		"**Do not use the candidate's first two steps as a 2-value pair.** On held-out 2-value integrands they are 17–59% worse than `R4_STEPS[0],[1]` under every filtered window. `R4_STEPS[0],[1]` is itself better than `R2_STEPS` at short filtered histories (EMA + 3x3: 16.6 vs 20.1) and worse per pixel at N >= 64 (25.1 vs 15.5).",
+		"**Better steps do not restore an advantage for the hierarchy.** {S} / hash under EMA + blur on held-out: 4-value 0.85–0.92 with `R4_STEPS`, 0.90–0.95 with the candidate; 2-value 0.95–1.04 with `R2_STEPS` and 0.96–0.98 for the best 2-value candidates on the selection set. In 2-value with `R2_STEPS`, {S} is 4–10% *worse* than a hash at 4–16 frames with a small blur on held-out integrands, which confirms the 3/4 resonance, but removing it only gets back to a tie. 1-value keeps its 21–52% advantage.",
+		"**Why the \"weak\" constants hold up:** steps near small-denominator rationals (6/7, 3/4, 7/13) are good at exactly those short window lengths, which is where filtered real-time use lives. Discrepancy predicted a 30% (2-value) and 40% (4-value) gain; integrand error under short windows did not follow."
+	],
+	"Not tested": [
+		"Motion, reprojection, disocclusion, history clamping; more than one sample per frame.",
+		"EMA alphas other than 0.1; windows other than 1, 4, 8, 16; flicker.",
+		"Local refinement of any candidate, and any second pick per dimension count (deliberately).",
+		"A nested design (one 4-value set whose first two steps are also a good 2-value pair).",
+		"The 2-value runners-up on held-out integrands.",
+		"GPU output."
+	],
+	"verdict": [
+		"No candidate for any dimension count passed the pre-registered rule (no metric more than 3% worse than the current constants on the selection set). The 4-value candidate was carried into validation as the rule's flagged fallback, and it is the only replacement with a large validated gain."
+	]
+}

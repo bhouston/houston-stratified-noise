@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { defineConfig } from 'vite';
 
-// The display name of the noise lives in names.json; %name%, %short%, %akaName%, %akaShort% and
-// %akaWhere% in the HTML pages are replaced from it at build time.
+// The display name of the noise lives in names.json; %name% and %short%
+// in the HTML pages are replaced from it at build time.
 const names = JSON.parse( readFileSync( new URL( './names.json', import.meta.url ) ) );
 
 export default defineConfig( {

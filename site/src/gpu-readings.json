@@ -1,0 +1,159 @@
+{
+	"setup": [
+		"**Adapter, logged in every `results/gpu/runs/*/*.json`:** `{ vendor: \"apple\", architecture: \"metal-3\", device: \"\", description: \"\", isFallbackAdapter: false }`. Apple M3, macOS 27.2. The driver aborts on a fallback or software adapter.",
+		"**Browser:** installed Google Chrome 157.0.8103.39, headless, Puppeteer 25.16, flags `--enable-unsafe-webgpu --use-angle=metal --enable-gpu --ignore-gpu-blocklist --disable-frame-rate-limit --disable-gpu-vsync`.",
+		"**Code under test:** the three.js pull request's merge base `3f7edc3d75e0`, its head `34137c3756fa` (mrdoob/three.js#35429), and the light map baker at `eb7187278b74` (`bhouston/three.js`, branch `ign-adoption`). The baker (`examples/jsm/lighting/vxgi/VXGIIrradiance.js`) was removed upstream by #35302, so it exists at neither the upstream base nor head.",
+		"**Harness edits** are uncommitted and saved as `analysis/gpu/patches/{base,head,bake}.diff`: a `?noise=` switch chosen at shader build time plus measurement-only samplers. The default path is each commit's unmodified code. Pages import `src/` directly; nothing under `build/` was generated.",
+		"**Scenes** are copied from `webgpu_vxgi.html`, `webgpu_postprocessing_ssr_denoise.html` and `webgpu_lightmap_baking.html` with the same cameras and parameters. The first two are identical at base and head."
+	],
+	"method": [
+		"960×720, pixel ratio 1, stationary camera. The harness advances frames itself (one node-frame update per frame), not `requestAnimationFrame`.",
+		"**Readback:** pipeline output after TRAA, `outputColorTransform = false`, into an RGBA32F render target, read with `readRenderTargetPixelsAsync`. Linear float; no tone mapping or 8-bit canvas.",
+		"**SSR differs from the example in one way:** the example runs TRAA after AgX grading; the harness runs TRAA on the linear combined output (scene color + denoised SSR) and skips grading.",
+		"**Reference:** mean of 4 × 1,024 post-TRAA frames rendered with white noise (independent hash per pixel, frame and dimension), two runs on base and two on head, 128 warm-up frames each.",
+		"**Per run:** warm-up of 128, 171 or 233 frames, then 256 consecutive frames. Three runs per sampler, each a fresh page load with a different starting frame index.",
+		"**Metrics** (all pixels, RGB, linear scene units): temporal noise = sqrt(mean per-pixel variance over the 256 frames) bias = RMS over pixels of (256-frame mean − reference) RMSE = sqrt(noise² + bias²), equal to the RMS of (frame − reference) over all frames and pixels flicker = RMS of (frame t − frame t−1) \"bias, corrected\" removes in quadrature the residual noise of a 256-frame mean (from disagreement between the three runs) and the reference noise.",
+		"**Floors:** reference noise 0.60×10⁻³ (VXGI) and 0.075×10⁻³ (SSR). Base-against-head white references differ by the same amount (0.56, 0.080), so base and head agree under white noise. One 256-frame mean carries 1.7–2.9×10⁻³ (VXGI) and 0.15–0.19×10⁻³ (SSR) of noise.",
+		"**fps:** 1920×1080 offscreen (never presented), 60 warm-up frames, then 5 s counting GPU-completed frames (`queue.onSubmittedWorkDone` every 4 frames). Samplers run sequentially, 5 rounds for VXGI and 3 for SSR. No per-frame timing."
+	],
+	"bake_method": [
+		"**Baker:** `LightMapper` + `vxgiIrradiance()` on the `ign-adoption` branch, as in `webgpu_lightmap_baking.html`: Cornell box, 1024² atlas, 3 cones, 64 samples per texel, no spatial filter. Read back from the baker's half-float target and decoded to float.",
+		"**Samplers:** (a) previous: the IGN pair (`shift = screenCoordinate + sample × 5.588238`, second value at `shift + (5.588238, 3.14159)`). (b) {S}, shared step: seeds 1 and 2, golden step 2654435769 in both dimensions. (c) {S}, R2 steps: the branch's code.",
+		"**Reference:** white noise, 128 bakes × 64 samples = 8,192 samples with the same 64 sub-texel jitters, averaged in float. Reference noise 0.012.",
+		"**Metrics** over the 695,843 texels at least 4 texels inside a chart, RGB, linear irradiance (mean 1.633): RMSE = RMS of (bake − reference); bias = RMS of the Gaussian low-pass (σ = 3 texels, within the chart) of that error; grain = RMS of the remainder; reference-free grain = RMS of (bake − its own low-pass).",
+		"Four repeats per sampler (start sample index 0, 64, 128, 192); repeat SD is below 0.0001 everywhere."
+	],
+	"bake_sensitivity": [
+		"As absolute high-pass grain the shared step is 3.4× (σ = 1), 3.7× (σ = 1.5), 3.8× (σ = 3) and 3.2× (σ = 6) grainier.",
+		"As relative, reference-free grain (high-pass divided by local mean) it is 3.0×, 2.9×, 2.36× and 1.9× for the same widths."
+	],
+	"bake_findings": [
+		"The shared step is not less accurate overall than the old noise (RMSE 1.01×). It turns the old sampler's error into grain: the IGN pair has little grain but a large smooth error (0.223, 14% of mean irradiance), visible as an over-bright floor in the crop.",
+		"With R2 steps, grain is slightly below the old level (−5.5%; −6% to −18% over filter widths; about 0% as relative grain) and the smooth error is gone, so RMSE drops 75%."
+	],
+	"simpler_intro": "The variants are in `analysis/gpu/harness/MeasureVariants.js` and `MeasureVoidCluster.js` and use the pull request's seeds. VXGI uses `R2_STEPS` for A, B and D; SSR uses `R4_STEPS`.",
+	"simpler_table": [
+		[
+			"Effect",
+			"Metric",
+			"Best",
+			"{S} against A (Hash + R_d)",
+			"{S} against B (IGN + R_d)",
+			"{S} against D (void-and-cluster + R_d)"
+		],
+		[
+			"VXGI",
+			"RMSE",
+			"A (8.86)",
+			"{S} 13% worse; beyond variation",
+			"Tie",
+			"{S} 6% better; about 1.3 SD, not resolved"
+		],
+		[
+			"VXGI",
+			"Bias",
+			"A (4.29)",
+			"{S} 23% worse; beyond variation",
+			"{S} 25% better; beyond variation",
+			"{S} 12% better; beyond variation"
+		],
+		[
+			"VXGI",
+			"Flicker",
+			"B (3.84); old code is lower (3.53)",
+			"{S} 18% better; beyond variation",
+			"{S} 8% worse; beyond variation",
+			"{S} 2.8% worse; beyond variation"
+		],
+		[
+			"VXGI",
+			"fps",
+			"A (100.4)",
+			"{S} 6% slower",
+			"Tie",
+			"Tie (D +1.8% in a noisy session)"
+		],
+		[
+			"VXGI",
+			"Structure",
+			"A, {S}, D clean",
+			"Same",
+			"B keeps a faint hatch and blotches in the mean error",
+			"Same"
+		],
+		[
+			"SSR",
+			"RMSE",
+			"{S} (2.982)",
+			"{S} 0.6% better; resolved, practically nil",
+			"{S} 11% better",
+			"{S} 1.8% better; beyond variation, small"
+		],
+		[
+			"SSR",
+			"Bias",
+			"A (0.482)",
+			"{S} 37% worse",
+			"{S} 37% better",
+			"{S} 2.4% better; about 2 SD"
+		],
+		[
+			"SSR",
+			"Flicker",
+			"Old code, {S}, D (2.46)",
+			"{S} 0.7% better; practically nil",
+			"{S} 9% better",
+			"Tie"
+		],
+		[
+			"SSR",
+			"fps",
+			"B (78.7)",
+			"Tie",
+			"{S} 7% slower",
+			"{S} about 4% faster"
+		],
+		[
+			"SSR",
+			"Banding",
+			"{S}, A, D clean",
+			"Same",
+			"B still streaks in single frames",
+			"Same"
+		]
+	],
+	"simpler_plain": [
+		"**SSR:** {S}, Hash + R_d and void-and-cluster + R_d are equivalent to within 2% on RMSE and flicker; the hash has the lowest bias. Any of the three removes the banding. IGN + R_d is worse and does not fully remove streaks.",
+		"**VXGI:** {S} is not the best on any metric. The hash has the lowest error and is fastest but flickers most (5.07, against 5.17 for white noise). IGN + R_d flickers least of the new options but keeps more bias and structure. {S} sits between: 18% less flicker than the hash for 13% more RMSE.",
+		"**D does not beat {S} in-engine.** The CPU study's 10–15% advantage under EMA + blur does not appear with the real TRAA and denoiser; D is slightly worse on RMSE in both effects and 2.8% better on VXGI flicker.",
+		"**C ({S} with R2 steps, VXGI):** slightly better than the Three.js pull request's R4[0], R4[1] on RMSE (−7%) and temporal noise (−12%).",
+		"{S}'s only measured advantage over the cheapest fix is lower VXGI flicker. Temporal convergence and bias removal come from the per-dimension Roberts steps, which all variants share."
+	],
+	"simpler_caveat": "**Caveat on B:** IGN evaluated at a pixel offset is, by its formula, the same value plus a near-constant shift (mod 1), whatever the offset. So B's dimensions are not spatially decorrelated; each pixel still converges over time through the per-dimension steps. A version that transposes or rescales coordinates per dimension was not tested.",
+	"variant_d": [
+		"Generator ported to JS from `analysis/temporal/noises.py` (`void_and_cluster`, 64×64, toroidal, σ = 1.5). The initial random 10% uses a JS PRNG, so the texture is a different instance of the same algorithm than the CPU study's. A self-check asserts the ranks are a permutation of 0..4095.",
+		"Storage: one-channel `r32float` `DataTexture` holding the integer rank, 64 × 64 × 4 = 16,384 bytes; all 4,096 ranks are exact. It would be 8,192 bytes as 16-bit.",
+		"Sampling: `textureLoad` at `(pixel + offset_d) & 63` (exact texel, repeat by masking), offsets (0,0), (23,41), (47,13), (11,53).",
+		"Time step: all in 0.32 fixed point. `phase = (rank << 20) + (1 << 19)`, add `index × step` in uint32 (wraps, no precision loss at large frame indices), then take the top 24 bits as a float.",
+		"JS generation time at startup: 36–62 ms over nine page loads (median about 38 ms)."
+	],
+	"tables_note": "Mean ± SD over three runs, ×10⁻³. Percentages are against \"Before\".",
+	"fps_note": "**fps note for D:** it was measured later, when the GPU was busier, alongside an {S} control in the same session. VXGI: {S} control 71.4 fps (69.1–76.0), D 74.6 (70.1–76.2); paired ratios 1.00–1.05, median +1.8%. SSR: {S} control 55.7 (53.6–55.7), D 53.1 (51.4–54.5); paired ratios 0.95–0.98, about −4%. Those absolute numbers are not comparable with the other rows.",
+	"ssr_only_note": "In the combined SSR image most temporal noise is not SSR noise, which is why RMSE moves much less than bias. With only the denoised reflections as output (`?output=ssr`, signal RMS 0.0415):",
+	"verdict": [
+		"**VXGI:** RMSE −43.6% and bias −67.0% against the previous IGN pair; flicker +17.2%. {S} is visibly grainier than the old IGN pair in a single frame. What it removes is the old sampler's large, smooth error.",
+		"**SSR:** RMSE −9.1% and bias −61.5% against the previous analytic R2. Flicker is unchanged (+0.1%), and temporal noise rises 3.9%.",
+		"**Banding:** the old SSR sampler leaves vertical streaks in the reflection in single frames and a strongly structured time-averaged error; both go away with {S}. The old VXGI error is large smooth blotches plus a fine diagonal hatch."
+	],
+	"limits": [
+		"**The bias metric depends on the reference.** It is white noise through the same TRAA and denoiser, and TRAA's history clamp responds to input noise. Mean signed offset from the reference in VXGI is +0.8×10⁻³ for the hash, +2.9×10⁻³ for {S}, +4.4×10⁻³ for IGN + R_d and +5.8×10⁻³ for the old code. This may favour the hash on bias. The old samplers' errors are far larger and spatially structured, so before/after conclusions do not depend on it; the A-against-{S} bias ranking might.",
+		"**A pre-TRAA white reference failed.** For VXGI the pre-TRAA path did not carry the same lighting as the TRAA path (0.107 RMS apart), so it is invalid. For SSR it differs from the TRAA result mainly at edges (0.0019 RMS excluding the top 1% of pixels), which is larger than the sampler biases. The data is kept (`rawwhite_*`) and unused.",
+		"**One scene and one static camera per effect, one GPU.** No motion, disocclusion or history rejection.",
+		"**SSR uses TRAA on linear color**, not after grading as shipped.",
+		"**256 frames per run**; the corrected bias column accounts for the remaining noise.",
+		"**fps:** the GPU was shared with other work. The first VXGI batch was disturbed (36–101 fps for one sampler) and is kept in `results/gpu/runs/fps_vxgi_disturbed`; the reported batch was rerun and is consistent to under 3%. Variant D's fps session was slower overall, so D is reported relative to an in-session {S} control.",
+		"**Volume lighting** not measured."
+	],
+	"tsl": "import { Fn, interleavedGradientNoise, uint, vec2, vec4 } from 'three/tsl';\nimport { R2_STEPS, R4_STEPS } from './HierarchicalHashedWeyl.js';\n\n// A. \"Hash + R_d\": white per-pixel Cranley-Patterson offsets + per-dimension Roberts (R2/R4) Weyl steps.\n\nconst pcg = Fn( ( [ input ] ) => {\n\n\tconst state = uint( input ).mul( uint( 747796405 ) ).add( uint( 2891336453 ) ).toVar();\n\tconst word = state.shiftRight( state.shiftRight( 28 ).add( 4 ) ).bitXor( state ).mul( uint( 277803737 ) ).toVar();\n\treturn word.shiftRight( 22 ).bitXor( word );\n\n} );\n\nexport function bindHashRd( resolution, seed = 0, steps = R4_STEPS ) {\n\n\treturn Fn( ( [ uvCoord, sampleIndex ] ) => {\n\n\t\tconst pixel = uvCoord.mul( resolution ).floor();\n\t\tconst index = uint( sampleIndex ).toConst();\n\t\tconst state = pcg( uint( pixel.x ).add( pcg( uint( pixel.y ).add( pcg( uint( seed ) ) ) ) ) ).toVar();\n\t\tconst result = vec4( 0 ).toVar();\n\n\t\tfor ( let k = 0; k < steps.length; k ++ ) {\n\n\t\t\tif ( k > 0 ) state.assign( pcg( state ) ); // next dimension's offset\n\t\t\tresult.element( k ).assign( state.add( index.mul( uint( steps[ k ] ) ) ).shiftRight( 8 ).toFloat().div( 16777216 ) );\n\n\t\t}\n\n\t\treturn result;\n\n\t} );\n\n}\n\n// B. \"IGN + R_d\": interleaved gradient noise phase at a different pixel offset per dimension + per-dimension Roberts Weyl steps.\n\nexport function bindIgnRd( resolution, seed = 0, steps = R4_STEPS ) {\n\n\treturn Fn( ( [ uvCoord, sampleIndex ] ) => {\n\n\t\tconst pixel = uvCoord.mul( resolution ).floor().add( 0.5 );\n\t\tconst index = uint( sampleIndex ).toConst();\n\t\tconst result = vec4( 0 ).toVar();\n\n\t\tfor ( let k = 0; k < steps.length; k ++ ) {\n\n\t\t\tconst offset = vec2( 97 * ( k + 1 ) + 13 * seed, 61 * ( k + 1 ) + 7 * seed );\n\t\t\tconst phase = uint( interleavedGradientNoise( pixel.add( offset ) ).mul( 16777216 ) ).shiftLeft( 8 );\n\t\t\tresult.element( k ).assign( phase.add( index.mul( uint( steps[ k ] ) ) ).shiftRight( 8 ).toFloat().div( 16777216 ) );\n\n\t\t}\n\n\t\treturn result;\n\n\t} );\n\n}\n",
+	"callsites": "Call sites measured: VXGI `bindHashRd( this._resolution, 29, R2_STEPS )( uvNode, this._frame )` using `.x`/`.y`; SSR `bindHashRd( this._resolution, 47 )` and `( this._resolution, 59 )` with default `R4_STEPS`. `R2_STEPS = [ 3242174889, 2447445413 ]`, `R4_STEPS = [ 3679390609, 3152041523, 2700274805, 2313257605 ]`. The TSL for D is in `analysis/gpu/harness/MeasureVoidCluster.js`."
+}

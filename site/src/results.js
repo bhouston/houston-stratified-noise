@@ -1,11 +1,14 @@
-import { S, command, figure, md, table } from './common.js';
+import { S, command, figure, list, r, table } from './common.js';
+import './results-temporal.js';
+import './results-gpu.js';
+import './results-r4.js';
+import { T, headline, realtime, bakeTable } from './data.js';
+import { dataTable } from './common.js';
 import spatial from '../../results/spatial/tables.json';
 import structure from '../../results/solution/structure.json';
 import pairs from '../../results/solution/step-pairs.json';
 import readings from './spatial-readings.json';
 
-const r = ( text ) => md( text.replaceAll( '{S}', S ) );
-const list = ( items, tag = 'ul' ) => `<${tag}>${items.map( ( i ) => `<li>${r( i )}</li>` ).join( '' )}</${tag}>`;
 
 // ---- structure (analysis/solution)
 
@@ -38,19 +41,19 @@ document.getElementById( 'structure-body' ).innerHTML = `
 	<p>Checks of what the construction guarantees, run on the plain-JavaScript reference. The full printed output is <code>results/solution/structure.txt</code>; the algorithm diagrams on the <a href="./">Overview</a> page come from the same command.</p>
 	${SOLUTION}
 
-	<h3>Aligned and unaligned windows</h3>
+	<h4>Aligned and unaligned windows</h4>
 	${table( windows ).replace( '<th>Method</th>', '<th>Window</th>' )}
 	<p>Guarantees hold only for windows aligned to the 2, 4 and 8 pixel grid. A 2×2 window shifted diagonally by one pixel is statistically white. Larger unaligned windows degrade gracefully because they still contain whole aligned sub-blocks: an 8×8 window at any offset tested has a mean 1.8 to 8 times more accurate than white noise. A 4×4 window at offset (4,4) is aligned again.</p>
 
-	<h3>Two dimensions within a tile</h3>
+	<h4>Two dimensions within a tile</h4>
 	${table( dimensions ).replace( '<th>Method</th>', '<th>64 (u,v) pairs per aligned tile</th>' )}
 	<p>Using two seeds over 4,096 tiles, each tile's 64 (u,v) pairs have perfect 1D marginals in both dimensions, but their joint 2D distribution is no better than white noise. Dimensions are independent, not jointly stratified; the joint quality of multi-dimensional samples comes from the temporal steps, not from space.</p>
 
-	<h3>Per-pixel 2D point sets over time, by step pair</h3>
+	<h4>Per-pixel 2D point sets over time, by step pair</h4>
 	<p>L2 star discrepancy of one pixel's first N two-dimensional samples (lower is better), mean over pixels.</p>
 	${table( discrepancy ).replace( '<th>Method</th>', '<th>Steps</th>' )}
 	${table( stepPairs ).replace( '<th>Method</th>', '<th>Steps</th>' )}
-	<p>A step shared by both dimensions stalls at about 0.075 and never converges. <code>R4_STEPS[0]</code> and <code>[2]</code> nearly satisfy α₀ + 5·α₂ = 4.000208, so that pair sits close to a small family of lines and barely improves between 256 and 1,024 samples. Whether these differences are visible in rendering was not tested here.</p>
+	<p>A step shared by both dimensions stalls at about 0.075 and never converges. <code>R4_STEPS[0]</code> and <code>[2]</code> nearly satisfy α₀ + 5·α₂ = 4.000208, so that pair sits close to a small family of lines and barely improves between 256 and 1,024 samples. Each step alone as a one-dimensional sequence, and what these differences do to integrand error, are in the <a href="#X3">temporal results</a>.</p>
 `;
 
 // ---- spatial (analysis/spatial)
@@ -77,26 +80,64 @@ document.getElementById( 'spatial-body' ).innerHTML = `
 	<p>Scope: one frame (sample index 0), one scalar per pixel. Nothing in this section says anything about temporal convergence or multi-dimensional sampling.</p>
 	${SPATIAL}
 
-	<h3>Methods as implemented</h3>
+	<h4>Methods as implemented</h4>
 	<p>${r( readings.protocol )}</p>
 	${table( { head: [ 'Definition', 'Arithmetic', 'Realizations' ], rows: readings.methods.map( ( row ) => row.map( r ) ) } )}
 	${list( readings.definitions )}
 
-	${figures.map( ( [ name, title ] ) => `<h3 id="${name}">${title}</h3>${figure( `spatial/figures/${name}.webp`, title, readings.figures[ name ].replaceAll( '{S}', S ) )}` ).join( '' )}
+	${figures.map( ( [ name, title ] ) => `<h4 id="${name}">${title}</h4>${figure( `spatial/figures/${name}.webp`, title, readings.figures[ name ].replaceAll( '{S}', S ) )}` ).join( '' )}
 
-	${spatial.tables.map( ( t ) => `<h3 id="table-${t.id}">${t.title}</h3>${table( t )}${( tableReadings[ t.id ] || [] ).map( ( start ) => `<p>${r( reading( start ) )}</p>` ).join( '' )}` ).join( '' )}
+	${spatial.tables.map( ( t ) => `<h4 id="table-${t.id}">${t.title}</h4>${table( t )}${( tableReadings[ t.id ] || [] ).map( ( start ) => `<p>${r( reading( start ) )}</p>` ).join( '' )}` ).join( '' )}
 
-	<h3>${S} details</h3>
+	<h4>${S} details</h4>
 	${list( spatial.details )}
 
-	${readings.reading.slice( 2 ).map( ( g ) => `<h3>${r( g.title )}</h3>${list( g.items )}` ).join( '' )}
+	${readings.reading.slice( 2 ).map( ( g ) => `<h4>${r( g.title )}</h4>${list( g.items )}` ).join( '' )}
 
-	<h3>Surprises</h3>
+	<h4>Surprises</h4>
 	${list( readings.surprises, 'ol' )}
 
-	<h3>Caveats and limits</h3>
+	<h4>Caveats and limits</h4>
 	${list( readings.caveats )}
 
-	<h3>Gaps worth follow-on work</h3>
+	<h4>Gaps worth follow-on work</h4>
 	${list( readings.gaps )}
+`;
+
+// ---- headline: the temporally accumulated regime, first on the page
+
+const windowCols = ( index ) => { const head = T.raw( 'D', index ).head; return [ 16, 32 ].map( ( n ) => head.indexOf( `N=${n}, gauss1` ) ); };
+
+document.getElementById( 'accumulated-body' ).innerHTML = `
+	<p>These samplers are used under temporal accumulation: TRAA or an exponential moving average over roughly 16 to 32 frames, usually with a small spatial filter. That regime comes first. An exponential moving average with α = 0.1 has about 19 effective frames. All errors are RMSE ×1000 on a static flat field; motion and disocclusion were not measured.</p>
+
+	<h3>Exponential accumulation (EMA α = 0.1) with a Gaussian σ = 1 blur, by values per pixel</h3>
+	<p class="caption">Steady-state error. One value per pixel: threshold tests; two and four: all test integrands. The animated IGN error for two and four values is bias from its correlated values, so no blur removes it.</p>
+	${dataTable( headline )}
+	<p>With one value per pixel ${S} matches or beats FAST and STBN on thresholded signals (on the smooth one-value test functions FAST is about 30% better and STBN about 14%), and IGN-based samplers are better still: animated IGN by about 1.5 times, and IGN as a spatial phase with a golden-ratio Weyl step at 6.24 against 7.57. With two values it trails FAST by 25% and void-and-cluster with R2 steps by 17%, and a plain per-pixel hash with the same steps ties it once about four frames are accumulated. With four values it is 7–12% better than the stacked FAST and STBN textures, behind void-and-cluster with R4 steps (17.1 against 15.4), and keeps a small lead over the plain hash (4–14% depending on the window; see <a href="#X4">is the hierarchy needed?</a>).</p>
+
+	<h3>The same, every spatial filter</h3>
+	${T( 'D', 0 )}${T( 'D', 2 )}${T( 'D', 3 )}
+
+	<h3>16 and 32 frames accumulated (box average), then a Gaussian σ = 1 blur</h3>
+	${T( 'D', 12, { cols: windowCols( 12 ) } )}${T( 'D', 16, { cols: windowCols( 16 ) } )}${T( 'D', 18, { cols: windowCols( 18 ) } )}
+
+	<h3>In-engine, steady state after TRAA: VXGI</h3>
+	<p class="caption">Three.js on a hardware GPU, mean ± SD over three runs of 256 frames, ×10⁻³, change against the previous sampler. Bias is measured against white noise through the same TRAA.</p>
+	${realtime( 'vxgi', 2, 3 )}
+	<h3>In-engine, steady state after TRAA: SSR, denoised</h3>
+	${realtime( 'ssr', 3 )}
+	<h3>In-engine: light map bake, 64 frames accumulated per texel, no spatial filter</h3>
+	${bakeTable}
+	<p>The old SSR and VXGI samplers were biased because their values per pixel were not independent; every variant that gives each value its own integer Weyl step removes that. A plain per-pixel hash with the same steps matches ${S} on SSR within 2%. On VXGI, like for like (variant C, ${S} with R2 steps, against variant A, the hash with R2 steps), the hash is about 4% lower on RMSE (8.86 against 9.26) with about 24% more flicker (5.07 against 4.09). Against the shipped configuration, which uses the first two R4 steps, the hash is 11% lower on RMSE with 22% more flicker, but there the step sets differ. Frame rate: no measurable change. Details, the simpler fixes and the limits of the method are under <a href="#engine">In-engine</a>; everything else about accumulation is under <a href="#temporal">Temporal</a>.</p>
+`;
+
+// ---- short histories: 1 to 8 frames accumulated, then a Gaussian sigma = 1 blur
+
+const shortCols = ( index ) => { const head = T.raw( 'D', index ).head; return [ 1, 4, 8 ].map( ( n ) => head.indexOf( `N=${n}, gauss1` ) ); };
+
+document.getElementById( 'short-body' ).innerHTML = `
+	<h3>1, 4 and 8 frames accumulated, then a Gaussian σ = 1 blur</h3>
+	${T( 'D', 12, { cols: shortCols( 12 ) } )}${T( 'D', 16, { cols: shortCols( 16 ) } )}${T( 'D', 18, { cols: shortCols( 18 ) } )}
+	<p>On a single frame ${S}'s error is 34% (one value per pixel) and 56% (two values) higher than FAST's. Against a plain hash with the same steps it leads only on a single frame for two and four values (13–21% and 11–18%); the full comparison at 1, 4, 8 and 16 frames is under <a href="#X4">is the hierarchy needed?</a>.</p>
 `;

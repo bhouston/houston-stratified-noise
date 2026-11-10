@@ -1,0 +1,162 @@
+{
+	"Headline numbers": [
+		"**Lockstep reproduces.** 2-value per-pixel at N=256: shared step 136.3, white 24.6, R2 steps 5.18, old VXGI IGN pair 131.6.",
+		"**Under EMA 0.1 + Gaussian σ1:**",
+		"**Long run:** {S} is identical at frame 4×10⁹. Unwrapped float32 IGN degrades by 10⁵ frames; float Weyl and the old SSR analytic R2 break between 10⁶ and 10⁷."
+	],
+	"Most surprising findings, mostly unfavourable": [
+		"**Per-pixel convergence comes from the Weyl steps, not from {S}.** A plain PCG hash + R_d steps, IGN + R_d and V&C + R_d all match {S} without a spatial filter (5.18 / 5.16 / 5.15 / 5.18).",
+		"**For 2-value and 4-value, {S}'s hierarchy adds almost nothing over hash + R_d after about four frames.** 2-value EMA + blur is 14.2 for both. {S} leads only on a single frame (13–21% for 2 values per pixel, 11–18% for 4 values per pixel) and for 1 values per pixel (25–53%).",
+		"**`R2_STEPS[0]` (0.7549, about 3/4) resonates with the base-4 hierarchy.** With that step {S} is 14% worse than a hash phase under EMA + 3×3; with every other step it is 10–38% better.",
+		"**Animated IGN beats {S} for one value per pixel with a blur:** 1.5× under EMA, 1.7× on a single frame, 41% less flicker. IGN + golden Weyl also beats it by 18%.",
+		"**Against FAST,** {S}'s single-frame error is 34% (1-value) and 56% (2-value) higher, and its filtered flicker is 35–57% higher.",
+		"**The Three.js pull request's step usage is confirmed weak.** VXGI uses `R4_STEPS[0],[1]`; `R2_STEPS` is exported but unused. That costs 52% more per-pixel error at N=64 (24.6 vs 16.2) and nothing under EMA + 3×3 (17.0 vs 16.9), so only the unfiltered bake would benefit from R2. `R4_STEPS[0]` is about 6/7 and is 4.4× worse than golden as a 1-value sequence at N=64; `[3]` is about 7/13 and 6.3× worse at N=256. `R4_STEPS[0],[2]` puts samples on five visible lines (a₁ + 5a₂ is an integer to 0.0002).",
+		"**The old SSR analytic R2 is temporally red:** an EMA passes 2.7× more of its noise than white, and its four outputs are functions of one scalar.",
+		"**R4 is weak for 4 values per pixel:** L2 discrepancy is only 1.3× better than white at N=1024, and scrambled Sobol is 3.8× lower."
+	],
+	"Methods as implemented": [
+		"All samplers are in `noises.py` as `f(x, y, n, D)`. Integer paths use wrapping uint32; float paths use float32 for every operation.",
+		"**{S}:** three.js PR #35429 `HierarchicalHashedWeyl.js` verbatim. Seeds are k+1 per dimension. Steps are golden 2654435769 (1-value), `R2_STEPS` [3242174889, 2447445413] (2-value) and `R4_STEPS` [3679390609, 3152041523, 2700274805, 2313257605] (4-value). The pull request's constants equal round(2³²/gᵏ) to within 1.",
+		"**{S}, R4 steps 0-1:** what the Three.js pull request's VXGI actually evaluates, `bindHierarchicalHashedWeyl(res, 29).xy`, so seeds 117 and 118 with `R4_STEPS[0],[1]`.",
+		"**{S}, shared step:** golden step in every dimension.",
+		"**White:** three.js PCG nested as `pcg(x ^ pcg(y ^ pcg(n ^ pcg(d+1))))`, top 24 bits.",
+		"**Animated IGN:** `fract(52.9829189 * fract(0.06711056 p.x + 0.00583715 p.y))` with `p = pixel + 0.5 + float(n) * 5.588238 + offset_d`, in float32. Dimension 2 offset is (5.588238, 3.14159), the removed VXGI code. Dimensions 3 and 4 use (47, 17) and (101, 59), which are arbitrary choices. \"64-cycle\" is the removed VXGI code exactly (`n % 64`).",
+		"**Analytic R2 (old SSR):** `bindAnalyticNoise(res, 47)` from three.js dev, exactly. `index = n + 47`; `offset = floor(fract(float(index) * (0.7548776662, 0.5698402910)) * 32)`; `c = (pixel + offset) mod 32`. `t = c.x/P + c.y/P² + 47` with P = 1.32471795724474602596. Outputs are `fract(tP/P)`, `fract(2Pt/P²)`, `fract(3Pt * 0.4198754210)`, `fract(4Pt/P³)`.",
+		"**R_d Weyl + white offset / + IGN offset:** `fract(phase_d(x, y) + float(n) * α_d)` in float32. α is 1/φ for R1, 1/g and 1/g² for R2 with g = 1.3247179572, and 1/gᵏ for k = 1..4 for R4 with g = 1.1673039782614187 (root of x⁵ = x + 1). The fraction has 2²⁴/(nα) levels: 256 at n = 10⁵, 16 at 10⁶, 2 at 10⁷.",
+		"**V&C 64×64:** own Ulichney void-and-cluster texture (toroidal, σ 1.5, fixed seed), as `fract(tex[pixel + texelOffset_d] + float(n) * step)`. Texel offsets are (0,0), (23,41), (47,13), (11,53). Step is either golden for all dimensions (\"shared\") or R_d per dimension.",
+		"**STBN 128²×64:** from `NVIDIA-RTX/STBN` `Assets/STBN.zip`, 8-bit. Scalar for 1-value, vec2 for 2-value, vec2 twice at texel offset (49, 83) for 4-value. Slice is `n mod 64`, with a (37, 71) tile shift per cycle.",
+		"**FAST 128²×32:** the atlas from three.js PR #35244, read exactly as `FASTNoise.js` does. 1-value is the real texture, 2-value the vec2 texture, 4-value is xyzw.",
+		"**Bound:** scipy scrambled Sobol with an independent sequence per pixel.",
+		"A real GPU may fuse or reorder float operations, so the float methods follow shader source order rather than being bit-guaranteed."
+	],
+	"Integrands": [
+		"Defined in `integrands.py`; every stated mean is checked by Monte Carlo.",
+		"**1-value (10):** u, u², 0.5 + 0.5cos(2πu); steps u < τ for τ in {0.1, 0.25, 1/π, 0.5, 1/√2, 0.75, 0.9}.",
+		"**2-value (14):** Smooth: uv, 0.5 + 0.5cos(2π(u−v)), 0.5 + 0.5cos(2π(u+v)), Gaussian bump σ 0.2. Edges: disc r = 0.4, quarter disc, u+v < 1, u < v, u+v < 0.7, box (u < 0.3 and v < 0.6), oblique 0.37u + 0.81v < 0.5. Rendering-like: cosine-hemisphere AO with a sinusoidal horizon, GGX (α 0.3) half-vector weighted by (h·l)⁸, GGX light hit h·l > 0.97.",
+		"**4-value (19):** Joint: mean(uᵢ), u1u2u3u4, Σuᵢ < 2, 4-ball r = 0.5, [u1<u3][u2<u4], SSR-like GGX(u1,u2)·[u3<0.4]·(0.5+u4), AO(u1,u2)·AO(u3,u4). Pairwise: uᵢ < uⱼ and uᵢ + uⱼ < 1 for all six pairs.",
+		"Group error is the RMS of the per-integrand RMSEs."
+	],
+	"A. 1-value per-pixel convergence": [
+		"64×64 pixels, no spatial filter.",
+		"Every golden-Weyl method shares one curve.",
+		"The textures beat white but fall at about N^−0.6 beyond their cycle length.",
+		"Analytic R2 is worse than white up to about N = 30.",
+		"Sobol is roughly 2× better than any Weyl sequence."
+	],
+	"B. 2-value and 4-value per-pixel convergence": [
+		"4-value at N = 64 / 256: {S} 31.0 / 11.1, shared 177 / 177, white 57.3 / 28.4, IGN 145 / 144, analytic R2 45.6 / 17.8, STBN 37.7 / 19.0, FAST 33.9 / 17.0, Sobol 23.0 / 9.11.",
+		"Lockstep is a property of the animation: a blue noise texture with one golden step for both channels fails identically.",
+		"A shared step is better on anti-diagonal integrands (u+v < 1: 3.79 vs 4.96) and 75× worse on diagonal ones (u < v: 287.7 vs 3.82)."
+	],
+	"C. Sample-set quality": [
+		"FAST's spatial χ² of 0.00 is real: its texels form an exactly stratified 2-value set."
+	],
+	"D. EMA and N-frame windows with spatial filters": [
+		"Protocol: flat field, 128×128 measured inside a 144×144 window, EMA measured over frames 128–255, box windows at unaligned starts. Tables for α 0.05 and 0.2 are in `results/temporal/tables_D.md` and keep the same ordering.",
+		"EMA α = 0.1, shown as no blur / 3×3 box / Gaussian σ1 / Gaussian σ2:",
+		"Without any blur, {S} is the best method for 1 values per pixel because of the golden Weyl sequence.",
+		"With a blur, {S} matches the blue noise textures for 1 values per pixel and loses to IGN.",
+		"In 2-value it trails FAST by 25% under EMA, and by 56% / 34% / 26% / 3% at 1 / 4 / 16 / 32 frames.",
+		"In 4-value it edges ahead of the stacked textures.",
+		"The IGN pair's error is bias, so no blur touches it."
+	],
+	"E. Temporal stability": [
+		"Flicker is the RMS frame-to-frame change of the EMA 0.1 + Gaussian σ1 output; \"fixed\" is the per-pixel time-persistent error without blur.",
+		"{S}'s energy is pushed to high temporal frequency about as well as STBN and FAST on thresholded signals.",
+		"{S}'s error is nearly all fluctuation (low fixed part), but it flickers more after a blur than the co-optimised textures.",
+		"Analytic R2 is red: consecutive masks correlate at +0.23."
+	],
+	"F. Spatial quality over time": [
+		"Low-frequency share of the threshold mask's spectrum (below 1/8 cyc/px; white is 4.9%) at frames 0 / 1 / 7 / 100 / 10⁶:",
+		"The wrapped difference between neighbouring pixels never changes for {S}, V&C + Weyl or hash + Weyl (drift exactly 0).",
+		"It is 0.006 for scrolling IGN and 0.28 for STBN and FAST, the same as white (0.287).",
+		"So frame n of {S} is a different rank band of one static pattern. There is no best or worst frame, and the accumulated error is a fixed function of each pixel's phase, so its pattern stays blue-ish rather than white.",
+		"The cost is that the pattern cannot be co-optimised across frames, which shows up as the higher blurred flicker.",
+		"Consecutive-mask correlation is −0.43 for {S}, IGN and V&C (the minimum possible), −0.42 for STBN and −0.27 for FAST."
+	],
+	"G. Long-run robustness": [
+		"Float IGN has 256 distinct values across a 64×64 frame at 10⁵, 32 at 10⁶ and 4 at 10⁷.",
+		"Float Weyl has 256, 16 and 2 at the same indices.",
+		"Analytic R2 gives each pixel only 4 distinct values per 64 frames at 10⁷. SSR's index runs to 2³¹−1 with no float-safe wrap.",
+		"{S}'s steps are all odd, so each pixel has the full 2³² period (2.3 years at 60 fps) and the uint32 wrap is seamless.",
+		"STBN and FAST per-pixel sequences contain repeats: 57.5 and 59.7 distinct values per 64 frames."
+	],
+	"H. 4-value pairwise independence": [
+		"Pair 1-3 is `R4_STEPS[0],[2]`, which sits on five lines. Every method that uses the R4 constants shows it identically.",
+		"The joint 4-value histogram for {S} is 0.54, more even than random.",
+		"Across pixels, {S}'s worst pair is 1.14, so the dimensions are independent.",
+		"Shared step: about 70 in every pair.",
+		"IGN copies: 49–100 over time, up to 811 across pixels, |r| up to 0.64.",
+		"Analytic R2: 0.6–8.5 over time, up to 81 across pixels.",
+		"STBN and FAST: 0.84–0.98."
+	],
+	"X1. Bit-reversed rank pairing": [
+		"An earlier experiment paired two dimensions inside each tile by bit-reversing the rank, and reported that per-pixel error barely changed while single-frame error nearly doubled. This section re-runs it. Dimension 1 is standard {S} with seed 1; dimension 2 is the bit reversal of dimension 1's 6-bit in-tile rank plus its own hashed tile phase (seed 2), so each tile holds the set (r/64, bitrev(r)/64), a (0,6,2)-net; temporal steps are `R2_STEPS` (`extras.py: hsn_bitrev`).",
+		"Definition used (`extras.py: hsn_bitrev`):",
+		"**\"Per-pixel error barely changed\" reproduces.** It is trivially true, because each pixel walks the same Weyl sequences.",
+		"**\"Single-frame error nearly doubled\" reproduces in direction.** The increase is 1.42× / 1.53× / 1.78× for the three filters, which leaves the variant worse than white. Edge integrands rise 1.57–2.07×; smooth ones improve slightly (0.89–0.92×).",
+		"**Cause:** bit reversal puts dimension 2's coarse bits at tile scale, so inside a small filter footprint dimension 2 is nearly constant. The benefit only appears for a filter covering exactly one tile, where it is 2.2× better (13× on smooth integrands)."
+	],
+	"X3. Step constants as Three.js uses them": [
+		"Verified from the diff: VXGI uses `bindHierarchicalHashedWeyl(res, 29)` `.x` and `.y`, which are `R4_STEPS[0],[1]`. `R2_STEPS` is exported and unused by both effects. SSR uses all four R4 steps.",
+		"`R4_STEPS[0]` is confirmed poor: it is within 0.0005 of 6/7 (continued fraction [0; 1, 5, 1, 42, …]), so a pixel revisits seven clusters for about 300 frames. It is 4.4× golden at N=64 and 3.6× at N=256, yet best of all at exactly N=7.",
+		"`R4_STEPS[3]` is as bad: 6.3× golden at N=256.",
+		"**Would VXGI benefit from `R2_STEPS`?** Yes, measurably, for unfiltered accumulation: `R4[0],[1]` is 9% worse at N=16, 20% at 32, 52% at 64 and 24% at 256, and 10% worse under EMA with no blur. It is 8–12% better at N = 7–8. Under EMA + 3×3 blur there is no difference (17.0 vs 16.9). So the 64-sample light map bake is where it matters; real-time VXGI under TRAA would not show it.",
+		"**Visible lattice:** yes. `R4[0],[2]` gives five parallel lines through N=256 (scatter figure, third column), `R4[1],[3]` gives two diagonal bands at N=64, and `R4[0],[1]` shows columns at N=64. Only `R2_STEPS` looks unstructured at both counts.",
+		"R4 is the better choice for short histories and under EMA; the untuned set is 16–23% better at N ≥ 64."
+	],
+	"X4. Is {S} needed? Hash + R_d (A) and IGN + R_d (B)": [
+		"Both are implemented in uint32 fixed point with exactly {S}'s steps (`extras.py: hash_rd`, `ign_rd`). IGN offsets per dimension are (0,0), (47,17), (101,59), (173,113). The \"R_d Weyl + white offset\" and \"+ IGN offset\" rows in the main tables are the float-time versions and give the same numbers at small frame indices. The Sobol bound is a different, stronger reference and is not method A.",
+		"Per-pixel convergence is identical by construction (2-value, N=256: {S} 5.18, A 5.18, B 5.27).",
+		"{S} error divided by A or B (below 1.00 means {S} is better), at N = 1 / 4 / 8 / 16 / EMA 0.1:",
+		"**One value per pixel.** {S} beats the hash by 13–66%, but loses to IGN + golden at short histories: 73% worse on a single frame, 35% at four frames, 18% under EMA + 3×3.",
+		"**Two values.** {S} beats the hash only on a single frame (13–21%) and ties from four frames on. It beats the IGN phase by 9–29% with small blurs and 2–3× at σ2, because IGN phases at offsets are cross-correlated; the one exception is a 16-frame window, where B is 22% better.",
+		"**Four values.** {S} beats the hash by 11–18% on one frame and 4–9% at four frames, then ties. It beats the IGN phase by 19–39% with small blurs and about 3× at σ2.",
+		"{S} is the only one of the three that is never the worst."
+	],
+	"X5. Step and hierarchy resonance": [
+		"This was one post-hoc diagnostic run; nothing was tuned as a result.",
+		"Ratio of {S} phase to hash phase for the same step(s), under EMA 0.1 + 3×3:",
+		"`R2_STEPS[0]` is about 3/4, and {S}'s top digit takes the values k/4 inside each 2×2 block. Stepping by about 3/4 nearly permutes the four pixels' values among themselves, so time adds little to what the spatial filter already averaged.",
+		"This is why the 2-value R2 configuration gains nothing over a hash under EMA + blur.",
+		"`R4[0],[3]` is 15% better than R2 under EMA + 3×3 (14.3 vs 16.9), despite being worse per pixel.",
+		"It suggests choosing steps jointly with the base-4 hierarchy; this was not explored."
+	],
+	"Plain-language conclusions": [
+		"**Where {S} matches blue noise textures**",
+		"One value per pixel under EMA + blur: within 3% of V&C and FAST, 11% better than STBN.",
+		"Temporal spectrum on thresholded signals: about level with STBN and FAST.",
+		"Every frame has the same spatial quality, and the accumulated residual stays blue-ish.",
+		"Four values per pixel: 7–12% better than stacked FAST or STBN.",
+		"Dimensions are independent across pixels.",
+		"**Where it falls short of them**",
+		"Single frame: 34% (1-value) and 56% (2-value) worse than FAST, with three times their low-frequency share.",
+		"Two values under EMA + blur: 25% behind FAST and 17% behind V&C + R2.",
+		"Blurred flicker: 35–57% above FAST and 15–19% above STBN.",
+		"The pattern only rotates, so it cannot be co-optimised across frames.",
+		"**Where it beats the alternatives**",
+		"White: 3.6× / 1.8× / 1.7× under EMA + blur for 1 values per pixel / 2-value / 4-value, and 9× / 4.7× / 2.6× per pixel at N=256.",
+		"Old VXGI IGN pair: 9.2× under EMA + blur and 25× per pixel.",
+		"Old SSR analytic R2: 1.3–1.4× under EMA + blur, 3× per pixel for 2 values per pixel, far better temporal spectrum and no float precision cliff.",
+		"Textures and IGN in unfiltered accumulation: 1.9× FAST and 3.1× STBN for 2 values per pixel at N=256.",
+		"Any frame index, with no wrap needed.",
+		"**Where it loses or ties**",
+		"Animated IGN for one value with a blur: IGN is 1.5× better under EMA, 1.7× on a single frame, with 41% less flicker.",
+		"IGN + golden Weyl for one value: 18% better.",
+		"Hash + R_d for two or four values: a tie from four frames on.",
+		"Scrambled Sobol per pixel: 2.2× lower 2-value discrepancy at N=256, 3.8× lower for 4 values per pixel at N=1024.",
+		"Its own constants: `R4[0]` and `[3]` for 1 values per pixel, the `[0],[2]` pair, and `R2[0]` against the hierarchy."
+	],
+	"Caveats and gaps": [
+		"**Static flat field only.** There is no motion, reprojection, disocclusion or history clamping. Short reset histories are exactly where {S} is weakest against textures.",
+		"**One sample per pixel per frame.** Sharing the index between frames and several samples per frame is untested.",
+		"**No edge-aware or variable-footprint denoisers,** and no upscaling. Filter interaction with the 8×8 tile grid was only touched in X1.",
+		"**Aggregates are RMS over a hand-picked integrand set** with diagonal edges over-represented. Per-integrand tables are in `results/temporal/tables_AB.md` and `results/temporal/tables_D.md` for re-weighting.",
+		"**Texture animation is one common scheme each.** Random per-frame offsets and texel scrolling were not tested, and the textures are 8-bit.",
+		"**Some offsets are arbitrary choices:** IGN offsets for dimensions 3 and 4, and the V&C texel offsets.",
+		"**Float32 emulation follows source order,** so the large-frame results are precision-class rather than bit-exact predictions.",
+		"**Follow-on research worth doing:** steps chosen jointly with the hierarchy base (X5); a 2-value-aware spatial phase without the small-kernel penalty of bit reversal (X1); a better 4-value temporal component, such as integer Owen-scrambled Sobol or rank-1 lattices good in all projections; a real TAA resolve with motion and disocclusion; more than one sample per frame; perceptually weighted error.",
+		"EA's `noise.zip` was not downloaded; FAST comes from the PR #35244 atlas.",
+		"L∞ star discrepancy was not computed; L2 star is reported instead."
+	]
+}

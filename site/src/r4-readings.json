@@ -1,0 +1,100 @@
+{
+	"definitions": [
+		"**{S}:** R2 steps for 2 values, R4 steps for 4 values, seeds k+1.",
+		"**R_d sequence, hashed per-pixel offset:** one PCG hash per pixel and dimension as the phase, plus `n * step_k` in uint32 with {S}'s steps. This is the earlier \"hash + R_d\" row.",
+		"**Analytic R4, RNoise variant (fork PR #42):** bhouston/three.js PR #42 (open, branch `swarm/65-rnoise-channels`, commit 8899ba3e, \"RNoise: Construct four-dimensional R-sequence samples\") rewrites `bindAnalyticNoise` as \"analytic R⁴\". Implemented verbatim, float32. `index = n + 47`; `offset = floor(fract(float(index) * (0.7548776662, 0.5698402910)) * 32)`; `c = (pixel + offset) mod 32`. `t = c.x + 32 c.y + 47`. `u_k = fract(t / P^k + 0.5)` for k = 1..4, with P = 1.1673039782614187. For 2 values the first two outputs are used. Upstream dev's `RNoise.js` names its helper `r4` but uses plastic-number multiples; that is the existing \"old SSR analytic R2\" row.",
+		"**(i) Single lattice:** `t = x/P + y/P²` with P the plastic number; `u_k = fract((K t + float(n)) * α_k)` with K = 1, in float32. α is the R4 constants for 4 values and the R2 constants for 2. All values come from one scalar.",
+		"**(ii) Per-dimension lattices:** `phase_k = fract(x a_k + y b_k)` in float32 with no hashing, plus `n * step_k` in uint32 with {S}'s steps. With α1 = 1/P and α2 = 1/P², the direction pairs are (α1, α2), (−α2, α1), (α1+α2, α2−α1), (α1−α2, α1+α2): the R2 lattice, its 90° rotation, and the two 45° (index-2) images. These were this study's choice. **Note:** the in-engine measurement used different direction pairs for its variant F: (a, b), (b, 1−a), (b, a), (a, 1−b). The CPU rows labelled E and F use exactly the in-engine definitions; row (ii) is the same idea with other directions. Four linear forms of (x, y) have only two local degrees of freedom. That is inherent to any hash-free 4-value lattice.",
+		"**(iii) Plain R_d:** `0.5 + n * step_k` in uint32, identical at every pixel.",
+		"**Others:** V&C 64×64 + R_d (float time), FAST, STBN, old SSR analytic R2 (dev `RNoise.js`, seed 47) and white, as in the temporal analysis."
+	],
+	"spectrum_note": "Spectrum statistics use the 50% threshold mask of each dimension on 128×128 pixels with a Hann window, averaged over frames 0–3. \"Largest bin\" is the largest single bin as a share of total power. \"Anisotropy\" is the standard deviation over the mean of power across 16 direction sectors.",
+	"reading1": [
+		"**Per-dimension lattices (ii) beat {S} on flat-field error but are visibly structured.** With 4 values the error is 10–34% lower and flicker 25% lower; with 2 values 12–50% lower, except a tie at N=4. However 13–15% of each mask's spectral power sits in one bin, against 0.09% for {S}, anisotropy is 3.0 against 0.15, and the swatches show diagonal line patterns in every dimension.",
+		"**Single lattice (i)** is within about 10% of {S} in most cells, but 27–60% worse at N=4 with 4 values. Its largest bin holds 14–16%, and its float time breaks between 10⁶ and 10⁷ frames.",
+		"**The PR #42 variant** beats {S} on a single frame with 4 values (0.80–0.86×), but is 29–78% worse at N=8–16 and under EMA with small filters (27.1 vs 17.1). Per pixel it reaches only 30.1 at N=256 against {S}'s 11.1, no better than white (28.4). Its largest bin holds 8–15%, its dimensions are coupled across pixels (χ² 95), and it breaks at 10⁷ frames.",
+		"**Plain R4 with no offset** converges per pixel but is 3–8.5× worse than {S} under any spatial filter, because every pixel is identical.",
+		"**The hashed per-pixel offset** is 12–27% worse than {S} on a single frame and tied from 4 frames on.",
+		"**Plainly:** analytic R4 can beat {S} on RMSE in a flat field, but every hash-free version shows lattice lines or bands. {S}, hash + R4 and FAST do not.",
+		"**Caveat.** The test is a flat field, so RMSE does not penalise a regular pattern beating against scene texture, edges, or a denoiser's kernel. The in-engine measurements (below) found the analytic variants worse than {S} and the hash, with structured time-averaged error."
+	],
+	"ablation_definitions": [
+		"`run.py: hsn_variant` generalises {S}. Its defaults are asserted bit-identical to the reference implementation.",
+		"**Scramble off** gives `child = ((a^b)<<1)|b`, which is Bayer order.",
+		"**Phase off** removes the tile hash.",
+		"**Depth L** uses L levels and 2^L-pixel tiles.",
+		"**Hash only** uses the per-pixel hash as the whole phase.",
+		"**Float time** is `fract(spatial + float32(n) * float32(step/2³²))`."
+	],
+	"reading2": [
+		"**Hierarchy** is what makes {S} blue-ish: 14× less low-frequency energy, and 1.4–1.7× lower error for one value. For two or more values its benefit fades after the first frame.",
+		"**Scramble** has two jobs. The less obvious one is decorrelating dimensions: without it every seed has the same Bayer rank order, and 2- and 4-value error rises 1.1–1.45×. It costs about 16% on 1-value small-kernel error and flicker, because Bayer order is better stratified locally.",
+		"**Tile phase** is nearly redundant once the scramble is present. Its measurable roles are continuous values rather than 64 levels, and being the fallback that breaks the grid if the scramble were removed.",
+		"**Depth:** three levels is the knee. Two is 6% worse at σ2, one is 36% worse, and four gives no gain apart from an exactly uniform 256-bin histogram.",
+		"**Per-dimension steps and the Weyl step** are the largest effects by far. The Weyl step costs flicker (6.65 against 0 for a static pattern).",
+		"**uint32 time** only matters past roughly 10⁵ frames, or about half an hour at 60 fps.",
+		"**Tiled Bayer 8×8** beats {S} on 1-value filtered RMSE and loses on spectrum (28% in one bin, 100% of power on the 8-pixel grid) and on multi-value error (1.45–2.9×)."
+	],
+	"caveats": [
+		"Flat static field only.",
+		"\"1 value\" errors use all ten 1-value integrands.",
+		"The per-dimension lattice directions and K = 1 were this study's choices and were not tuned.",
+		"The float-time variants follow shader source order rather than being bit-exact to a GPU.",
+		"The ablation is single-factor. Interactions between factors were tested only for scramble × phase."
+	],
+	"likeforlike": [
+		"**E with the first two R4 constants (the VXGI case): agrees.** Worse than {S} and the hash under EMA (1.10–1.18×) and worse per pixel at N=64 (24.3 vs 16.2). Its error swings from 1.8× worse at 4 frames to 0.4–0.6× at 8, which matches the instability seen in VXGI. Its two dimensions are strongly coupled across pixels (χ² 28).",
+		"**E with R2 constants: agrees on the tie, less so on flicker.** On the CPU it is 9–11% better than {S} under EMA with small filters and 9% worse at σ2. It flickers 11% more than {S} here, against 26% in-engine.",
+		"**F with two values: agrees.** 9–34% worse than {S} under EMA with R2 steps and 23–36% worse with the first two R4 steps. It wins clearly on a single frame (0.53–0.70×) and has the lowest flicker of the group.",
+		"**E with four values: agrees.** 6–34% worse than {S} under EMA.",
+		"**F with four values: partly disagrees.** In the flat-field test it ties or slightly beats {S} (0.93–0.98× under EMA, 0.73–0.92× in short windows at 3×3 and σ1). In-engine SSR measured it about 4% worse than {S}.",
+		"**Likely reason for the gap (untested).** Every E and F variant puts 13–18% of its mask power in a single spectral bin, with anisotropy 2–3, against 0.09% and 0.15 for {S}. A flat field does not penalise that structure; a real scene and denoiser do.",
+		"**Direction choice matters.** This study's own direction pairs (ii) beat F under EMA + σ1 by 24% for two values and 10% for four, and beat {S} by 12–14% under EMA + σ1 in the flat field. They carry the same 13–15% spectral peak, so the visible lattice remains.",
+		"**Fixed-point time works.** E and F are flat out to frame 10⁷, unlike the float32 version (i), which reaches 228–292 there."
+	],
+	"addendum": [
+		"E and F are in the CPU comparison with exactly the in-engine definitions (transcribed from `analysis/gpu/harness/MeasureAnalyticR4.js` in uint32 fixed point; the script asserts every derived constant equals the in-engine one). Seeds for E follow the call sites: 47 for four values, 29 for two. The swatch figure shows E and F. This study's own rows \"(i) single lattice\" (float32) and \"(ii) per-dimension lattices\" (own direction pairs) are kept and labelled separately. E is numerically the same sampler as (i) apart from fixed-point time; F is not the same as (ii), because the direction pairs differ."
+	],
+	"engine_definitions": [
+		"Both are hash-free and use 0.32 fixed point in uint32 throughout (spatial phase and time step wrap mod 2³², so nothing degrades at large pixel coordinates or frame indices). P = 1.32471795724474602596, g = 1.1673039782614187.",
+		"**E, single lattice:** t(x, y) = x/P + y/P² + seed, value_k = fract((t·K + n)·α_k), **K = 1**, no tile wrap. Because x, y, n are integers this equals x·fract(Kα_k/P) + y·fract(Kα_k/P²) + n·α_k (mod 1), which is what the shader computes. R4 constants: α_k = g⁻ᵏ, k = 1..4 (VXGI uses the first two). R2 constants (VXGI only): α = 1/P, 1/P².",
+		"**F, per-dimension lattices:** value_k = fract(x·a_k + y·b_k + n·α_k), no seed. With a = 1/P = 0.7548776662 and b = 1/P² = 0.5698402910, the direction pairs are the R2 lattice in four orientations: k0: (a, b) k1: (b, 1−a) = (0.5698402910, 0.2451223338), rotated 90° k2: (b, a), transposed k3: (a, 1−b) = (0.7548776662, 0.4301597090), transposed and rotated Time steps α_k are R4 (g⁻ᵏ) or, for VXGI, also R2.",
+		"The fixed-point time steps come from `Math.round(α·2³²)` and differ from the pull request's `R4_STEPS[2]` and `R2_STEPS[1]` by one unit in the last place."
+	],
+	"engine_structure": [
+		"**VXGI, single frame:** all four analytic variants show a fine regular hatch; {S} and the hash show grain.",
+		"**VXGI, time-averaged error:** E with R4 constants has strong diagonal stripes across the whole wall. E with R2 constants and both F variants have large smooth blotches, similar in kind to the old IGN pair but weaker.",
+		"**SSR, single frame:** E and F look clean; the old streaks are gone.",
+		"**SSR, time-averaged error:** E has coloured blotches (similar to IGN + R_d); F has fine parallel ripples. {S} and the hash show only grain."
+	],
+	"engine_verdict": [
+		"**Against the old SSR sampler:** a clear improvement. RMSE 10.4% lower, bias 47% lower, temporal noise and flicker unchanged or slightly lower. It removes the single-frame banding.",
+		"**Against {S}:** SSR: G has the lowest RMSE of anything measured (1.4% below {S}, well beyond run-to-run SD), because its temporal noise is 3.9% lower. Its bias is 38% higher and its averaged error is visibly structured, where {S}'s is grain. VXGI: {S} is better. G's RMSE is 6.7% higher and bias 18% higher; flicker is 3.4% lower. All beyond run-to-run variation.",
+		"**Against hash + R_d:** SSR: G is 2.0% lower on RMSE and 1.6% lower on flicker, but has 89% more bias. VXGI: the hash is 17% lower on RMSE and 31% lower on bias; G flickers 21% less.",
+		"**Agreement with the CPU flat-field test:** partly. It agrees on direction under accumulation (G's time-averaged error is worse than {S}'s in both effects and is spatially structured). It does not agree on size: the CPU's 29–78% deficit does not appear in RMSE; in SSR the 8-frame denoiser plus TRAA leaves G slightly ahead of {S} on RMSE, and in VXGI the deficit is 7%. The single-frame advantage with four values shows up in SSR as lower temporal noise (2.795 against 2.908)."
+	],
+	"engine_fps": [
+		"Not resolved. The GPU was heavily shared during this session: the {S} control drifted from 55 to 31 fps across three VXGI rounds and from 28 to 41 fps across three SSR rounds. Ratios to the same-round {S} control were 0.84–1.05 for G in VXGI and 1.07–1.28 in SSR, but the old code and the hash moved by similar amounts in the same rounds. No speed difference should be quoted for G."
+	],
+	"engine_g_structure": [
+		"**SSR, single frame:** clean. The old sampler's vertical streaks are gone.",
+		"**SSR, time-averaged error:** strongly structured in the reflection: high-contrast coloured blotches, close to the old sampler's, and much stronger than {S}, the hash, E or F.",
+		"**VXGI, single frame:** a fine diagonal hatch, similar to the old IGN pair.",
+		"**VXGI, time-averaged error:** the same hatch plus mild smooth blotches, with no large-scale stripes like E."
+	],
+	"engine_constants": [
+		"Resulting uint32 constants:",
+		"R4 time steps: 3679390609, 3152041523, 2700274806, 2313257605",
+		"R2 time steps: 3242174889, 2447445414",
+		"E with R4, x: 2777489796, 2379405749, 2038377144, 1746226503; y: 2096665016, 1796160259, 1538725381, 1318187387",
+		"E with R2, x: 2447445414, 1847521882; y: 1847521882, 1394653007",
+		"F (x, y): (3242174889, 2447445414), (2447445414, 1052792407), (2447445414, 3242174889), (3242174889, 1847521882)"
+	],
+	"engine_ef_verdict": [
+		"**Against {S}:** {S} is better on RMSE in SSR (by 3–4%) and in VXGI against everything except E with R2 constants, which ties on RMSE but flickers 26% more. {S} has no lattice structure in either the frame or the averaged error. E's one advantage is 1.2% lower SSR flicker.",
+		"**Against hash + R_d:** the hash is better on RMSE and bias in both effects, with one exception: E with R2 constants has lower VXGI bias (3.70 against 4.29) at 11% higher RMSE.",
+		"A purely analytic R4 sampler fixes the old banding in single SSR frames but trades it for structured error over time. Decorrelating pixels with a per-pixel offset is what removes that."
+	],
+	"engine_e_note": "E with R4 constants is not stationary over a 256-frame window: the three runs gave RMSE 17.1, 16.6, 13.3 and bias 11.9, 5.8, 5.0, so its \"corrected\" bias is not meaningful.",
+	"engine_fps_ef": "**fps:** measured at 1920×1080 in a session where the GPU was shared ({S} control 47.7–51.3 fps for VXGI, 40.0–42.9 for SSR), so only ratios to the same-round {S} control are given: three rounds, median shown. Per-round ratios span 0.94–1.05 (one SSR F round 1.14), so none of these differences is resolved."
+}

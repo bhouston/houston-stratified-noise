@@ -1,27 +1,85 @@
 // Interactive explorer: runs the src/noise modules on the CPU into 2D canvases.
 import { S, el } from './common.js';
-import { NOISES } from '../../src/noise/index.js';
+import { NOISES, GOLDEN_STEP, R4_STEPS, TRADEOFF_R4_STEPS, stepsFor } from '../../src/noise/index.js';
 
-const N = 256, PAD = 24, M = N + 2 * PAD; // 256x256 view plus a margin so the blur never sees an edge
+const N = 256, PAD = 32, M = N + 2 * PAD; // 256x256 view plus a margin so the blur (truncated at 4 sigma, sigma <= 8) never sees an edge
 const ORIGIN = 1024 - PAD; // the view starts at the tile-aligned screen coordinate (1024, 1024)
+const PIXEL = ( PAD + 21 ) * M + PAD + 13; // the pixel whose samples the scatter view plots
 const noises = NOISES.map( ( n ) => ( { ...n, label: n.label.replaceAll( 'HSN', S ) + ( n.animated ? '' : ' (static)' ) } ) );
 
+// Test functions f(u) with their exact means, by number of values per pixel (a subset of analysis/temporal/integrands.py).
+const INTEGRANDS = {
+	1: [
+		[ 'Noise value u', ( u ) => u[ 0 ], () => 0.5 ],
+		[ 'Thresholded, u < t', ( u, t ) => u[ 0 ] < t ? 1 : 0, ( t ) => t ]
+	],
+	2: [
+		[ 'u < v (diagonal edge)', ( u ) => u[ 0 ] < u[ 1 ] ? 1 : 0, () => 0.5 ],
+		[ 'u + v < 1 (anti-diagonal edge)', ( u ) => u[ 0 ] + u[ 1 ] < 1 ? 1 : 0, () => 0.5 ],
+		[ 'Disc, radius 0.4', ( u ) => ( u[ 0 ] - 0.5 ) ** 2 + ( u[ 1 ] - 0.5 ) ** 2 < 0.16 ? 1 : 0, () => Math.PI * 0.16 ],
+		[ 'Box, u < 0.3 and v < 0.6', ( u ) => u[ 0 ] < 0.3 && u[ 1 ] < 0.6 ? 1 : 0, () => 0.18 ],
+		[ 'Product u·v', ( u ) => u[ 0 ] * u[ 1 ], () => 0.25 ]
+	],
+	4: [
+		[ 'u1 < u3 and u2 < u4', ( u ) => u[ 0 ] < u[ 2 ] && u[ 1 ] < u[ 3 ] ? 1 : 0, () => 0.25 ],
+		[ 'u1 < u3 (one pair)', ( u ) => u[ 0 ] < u[ 2 ] ? 1 : 0, () => 0.5 ],
+		[ 'u1 + u2 + u3 + u4 < 2', ( u ) => u[ 0 ] + u[ 1 ] + u[ 2 ] + u[ 3 ] < 2 ? 1 : 0, () => 0.5 ],
+		[ 'Mean of the four values', ( u ) => ( u[ 0 ] + u[ 1 ] + u[ 2 ] + u[ 3 ] ) / 4, () => 0.5 ],
+		[ 'Product u1·u2·u3·u4', ( u ) => u[ 0 ] * u[ 1 ] * u[ 2 ] * u[ 3 ], () => 1 / 16 ]
+	]
+};
+
+const STEPS = [
+	[ 'Default: golden / R2 / R4, one step per value', ( D ) => stepsFor( D ) ],
+	[ 'Shared golden step for every value (lockstep failure)', ( D ) => Array( D ).fill( GOLDEN_STEP ) ],
+	[ 'First values of R4 (as Three.js VXGI uses for two)', ( D ) => R4_STEPS.slice( 0, D ) ],
+	[ 'Trade-off candidate from the step search (four values; not the default)', ( D ) => TRADEOFF_R4_STEPS.slice( 0, D ) ]
+];
+
 const $ = ( id ) => document.getElementById( id );
-const option = ( n ) => `<option value="${n.id}">${n.label}</option>`;
-$( 'a' ).innerHTML = noises.map( option ).join( '' );
-$( 'b' ).innerHTML = '<option value="">None</option>' + noises.map( option ).join( '' );
+const options = ( list ) => list.map( ( [ name ], i ) => `<option value="${i}">${name}</option>` ).join( '' );
+$( 'steps' ).innerHTML = options( STEPS );
+
+// the noise and test-function menus depend on the number of values per pixel
+function menus() {
+
+	const D = + $( 'values' ).value;
+	const list = noises.filter( ( n ) => D === 1 || n.multi ).map( ( n ) => `<option value="${n.id}">${n.label}</option>` ).join( '' );
+
+	for ( const [ id, none, fallback ] of [ [ 'a', '', 'hsn' ], [ 'b', '<option value="">None</option>', 'hash-rd' ] ] ) {
+
+		const previous = $( id ).value;
+		$( id ).innerHTML = none + list;
+		$( id ).value = previous;
+		if ( $( id ).selectedIndex < 0 ) $( id ).value = fallback;
+
+	}
+
+	$( 'integrand' ).innerHTML = options( INTEGRANDS[ D ] );
+	$( 'threshold' ).disabled = D !== 1;
+
+}
+
+menus();
 $( 'a' ).value = 'hsn';
 $( 'b' ).value = 'ign-animated';
+$( 'values' ).addEventListener( 'input', menus );
 
-const settings = () => ( {
-	seed: + $( 'seed' ).value, integrand: $( 'integrand' ).value, threshold: + $( 'threshold' ).value, sigma: + $( 'sigma' ).value,
-	mode: $( 'mode' ).value, alpha: + $( 'alpha' ).value, frame: + $( 'frame' ).value, gain: + $( 'gain' ).value
-} );
+const settings = () => {
+
+	const D = + $( 'values' ).value, [ name, f, mean ] = INTEGRANDS[ D ][ + $( 'integrand' ).value ], threshold = + $( 'threshold' ).value;
+	return {
+		D, f, target: mean( threshold ), integrand: name, steps: STEPS[ + $( 'steps' ).value ][ 1 ]( D ),
+		seed: + $( 'seed' ).value, threshold, sigma: + $( 'sigma' ).value,
+		mode: $( 'mode' ).value, alpha: + $( 'alpha' ).value, frame: + $( 'frame' ).value, gain: + $( 'gain' ).value
+	};
+
+};
 
 // ---- panels
 
-const VIEWS = [ [ 'pattern', 'Current frame' ], [ 'mask', 'Thresholded at t' ], [ 'spectrum', 'Log power spectrum' ], [ 'result', 'Blurred accumulation: error × gain' ] ];
-const STATS = [ [ 'mean', 'Mean of the frame' ], [ 'raw', 'RMS error, one frame, no filter' ], [ 'filtered', 'RMS error, current settings' ], [ 'ratio', 'Current settings ÷ one unfiltered frame' ], [ 'tiles', 'Aligned 8×8 tiles exactly stratified' ], [ 'frames', 'Frames accumulated' ] ];
+const VIEWS = [ [ 'pattern', 'Current frame (first value)' ], [ 'second', '' ], [ 'spectrum', 'Log power spectrum' ], [ 'result', 'Blurred accumulation: error × gain' ] ];
+const STATS = [ [ 'mean', 'Mean of the frame (first value)' ], [ 'raw', 'RMS error, one frame, no filter' ], [ 'accumulated', 'RMS error, accumulated, no blur' ], [ 'filtered', 'RMS error, accumulated and blurred' ], [ 'tiles', 'Aligned 8×8 tiles exactly stratified' ], [ 'frames', 'Frames accumulated' ] ];
 
 function makePanel( slot ) {
 
@@ -30,7 +88,7 @@ function makePanel( slot ) {
 		<dl class="stats">${STATS.map( ( [ id, name ] ) => `<dt>${name}</dt><dd data-stat="${id}"></dd>` ).join( '' )}</dl></section>` );
 	$( 'panels' ).append( root );
 	const ctx = Object.fromEntries( VIEWS.map( ( [ id ] ) => [ id, root.querySelector( `[data-view=${id}]` ).getContext( '2d' ) ] ) );
-	return { root, ctx, image: new ImageData( N, N ), key: '', done: - 1, cur: new Float32Array( M * M ), acc: new Float32Array( M * M ) };
+	return { root, ctx, image: new ImageData( N, N ), key: '', done: - 1, cur: new Float32Array( M * M ), acc: new Float32Array( M * M ), points: [] };
 
 }
 
@@ -40,16 +98,18 @@ const panels = [ makePanel( 'a' ), makePanel( 'b' ) ];
 function step( panel, noise, s ) {
 
 	const target = noise.animated ? s.frame : 0; // a static noise is the same every frame, so one frame is its accumulation
-	const key = [ noise.id, s.seed, s.integrand, s.integrand === 'threshold' ? s.threshold : '', s.mode, s.mode === 'ema' ? s.alpha : '' ].join();
-	if ( key !== panel.key || panel.done > target ) { panel.key = key; panel.done = - 1; }
+	const key = [ noise.id, s.seed, s.D, s.integrand, s.D === 1 ? s.threshold : '', s.steps, s.mode, s.mode === 'ema' ? s.alpha : '' ].join();
+	if ( key !== panel.key || panel.done > target ) { panel.key = key; panel.done = - 1; panel.points = []; }
 	if ( panel.done === target ) return false;
 
-	const index = ++ panel.done, { cur, acc } = panel, t = s.threshold, fn = noise.fn;
+	const index = ++ panel.done, { cur, acc } = panel, { D, f, steps, seed, threshold } = s, fn = noise.fn, u = [ 0, 0, 0, 0 ];
 
 	for ( let j = 0, k = 0; j < M; j ++ ) for ( let i = 0; i < M; i ++, k ++ ) {
 
-		const v = cur[ k ] = fn( ORIGIN + i, ORIGIN + j, index, s.seed );
-		const g = s.integrand === 'threshold' ? ( v < t ? 1 : 0 ) : v;
+		for ( let d = 0; d < D; d ++ ) u[ d ] = fn( ORIGIN + i, ORIGIN + j, index, seed, d, steps );
+		cur[ k ] = u[ 0 ];
+		if ( k === PIXEL ) panel.points.push( [ u[ 0 ], u[ 1 ] ] );
+		const g = f( u, threshold );
 		if ( index === 0 ) acc[ k ] = g;
 		else if ( s.mode === 'ema' ) acc[ k ] += s.alpha * ( g - acc[ k ] );
 		else acc[ k ] += g; // running sum; divided by the frame count when read
@@ -64,10 +124,10 @@ function step( panel, noise, s ) {
 
 const tmp = new Float32Array( M * M ), blurred = new Float32Array( N * N );
 
-// Separable Gaussian truncated at 3 sigma, evaluated only for the central N x N.
+// Separable Gaussian truncated at 4 sigma, evaluated only for the central N x N.
 function blur( src, scale, sigma ) {
 
-	const radius = Math.min( PAD, Math.ceil( 3 * sigma ) ), w = [];
+	const radius = Math.min( PAD, Math.ceil( 4 * sigma ) ), w = [];
 	for ( let d = - radius; d <= radius; d ++ ) w.push( sigma > 0 ? Math.exp( - d * d / ( 2 * sigma * sigma ) ) : 1 );
 	const sum = w.reduce( ( a, b ) => a + b );
 
@@ -159,10 +219,24 @@ function draw( panel, view, pixel ) {
 function render( panel, noise, s ) {
 
 	const { cur, acc } = panel, at = ( i, j ) => ( j + PAD ) * M + i + PAD;
-	const target = s.integrand === 'threshold' ? s.threshold : 0.5, frames = panel.done + 1;
+	const frames = panel.done + 1, scale = s.mode === 'mean' ? 1 / frames : 1, target = s.target;
 
 	draw( panel, 'pattern', ( i, j ) => cur[ at( i, j ) ] );
-	draw( panel, 'mask', ( i, j ) => cur[ at( i, j ) ] < s.threshold ? 0 : 1 );
+
+	if ( s.D === 1 ) {
+
+		draw( panel, 'second', ( i, j ) => cur[ at( i, j ) ] < s.threshold ? 0 : 1 );
+
+	} else { // one pixel's (first, second) values on every accumulated frame
+
+		const c = panel.ctx.second;
+		c.fillStyle = '#fff'; c.fillRect( 0, 0, N, N );
+		c.fillStyle = '#2f6fd0';
+		for ( const [ u, v ] of panel.points ) c.fillRect( u * N - 1.5, ( 1 - v ) * N - 1.5, 3, 3 );
+
+	}
+
+	panel.root.querySelector( '[data-view=second] + figcaption' ).textContent = s.D === 1 ? 'Thresholded at t' : 'One pixel\'s (first, second) values, every frame so far';
 
 	const p = spectrum( cur );
 	draw( panel, 'spectrum', ( i, j ) => {
@@ -173,15 +247,14 @@ function render( panel, noise, s ) {
 
 	} );
 
-	const result = blur( acc, s.mode === 'mean' ? 1 / frames : 1, s.sigma );
+	const result = blur( acc, scale, s.sigma );
 	draw( panel, 'result', ( i, j ) => Math.min( Math.max( 0.5 + ( result[ j * N + i ] - target ) * s.gain, 0 ), 1 ) );
 
-	let mean = 0, raw = 0, filtered = 0, tiles = 0;
+	let mean = 0, accumulated = 0, filtered = 0, tiles = 0;
 
 	for ( let j = 0; j < N; j ++ ) for ( let i = 0; i < N; i ++ ) {
 
-		const v = cur[ at( i, j ) ], g = s.integrand === 'threshold' ? ( v < s.threshold ? 1 : 0 ) : v;
-		mean += v; raw += ( g - target ) ** 2; filtered += ( result[ j * N + i ] - target ) ** 2;
+		mean += cur[ at( i, j ) ]; accumulated += ( acc[ at( i, j ) ] * scale - target ) ** 2; filtered += ( result[ j * N + i ] - target ) ** 2;
 
 	}
 
@@ -193,8 +266,8 @@ function render( panel, noise, s ) {
 
 	}
 
-	raw = Math.sqrt( raw / ( N * N ) ); filtered = Math.sqrt( filtered / ( N * N ) );
-	const stat = { mean: ( mean / ( N * N ) ).toFixed( 4 ), raw: raw.toFixed( 4 ), filtered: filtered.toFixed( 5 ), ratio: ( filtered / raw ).toFixed( 3 ) + '×', tiles: `${tiles} / ${( N / 8 ) ** 2}`, frames: noise.animated ? frames : '1 (static)' };
+	if ( frames === 1 ) panel.raw = Math.sqrt( accumulated / ( N * N ) ); // the first frame's unfiltered error
+	const stat = { mean: ( mean / ( N * N ) ).toFixed( 4 ), raw: panel.raw.toFixed( 4 ), accumulated: Math.sqrt( accumulated / ( N * N ) ).toFixed( 5 ), filtered: Math.sqrt( filtered / ( N * N ) ).toFixed( 5 ), tiles: `${tiles} / ${( N / 8 ) ** 2}`, frames: noise.animated ? frames : '1 (static)' };
 	for ( const id in stat ) panel.root.querySelector( `[data-stat=${id}]` ).textContent = stat[ id ];
 
 }
@@ -218,6 +291,7 @@ function tick() {
 		panel.root.querySelector( 'h3' ).textContent = noise.label;
 		const end = performance.now() + 12;
 		let more = step( panel, noise, s );
+		if ( panel.done === 0 ) render( panel, noise, s ); // records the single-frame error
 		while ( more && performance.now() < end ) more = step( panel, noise, s );
 		busy ||= more;
 		render( panel, noise, s );
