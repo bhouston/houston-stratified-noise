@@ -1,0 +1,82 @@
+== constants
+level salts 0x632be5ab 0xc657cb56 0x2983b101 phase salt 0x02e5be93
+golden phi_d=1.6180339887498949 k=0 step 2654435769 0x9e3779b9 2^32/phi^(k+1)=2654435769.4972 alpha=0.6180339886 floor? true round? true odd? true
+R2 phi_d=1.3247179572447461 k=0 step 3242174889 0xc13fa9a9 2^32/phi^(k+1)=3242174889.0103 alpha=0.7548776662 floor? true round? true odd? true
+R2 phi_d=1.3247179572447461 k=1 step 2447445413 0x91e10da5 2^32/phi^(k+1)=2447445413.7798 alpha=0.5698402908 floor? true round? false odd? true
+R4 phi_d=1.1673039782614187 k=0 step 3679390609 0xdb4f0b91 2^32/phi^(k+1)=3679390609.4597 alpha=0.8566748837 floor? true round? true odd? true
+R4 phi_d=1.1673039782614187 k=1 step 3152041523 0xbbe05633 2^32/phi^(k+1)=3152041523.0142 alpha=0.7338918566 floor? true round? true odd? true
+R4 phi_d=1.1673039782614187 k=2 step 2700274805 0xa0f2ec75 2^32/phi^(k+1)=2700274805.6328 alpha=0.6287067209 floor? true round? false odd? true
+R4 phi_d=1.1673039782614187 k=3 step 2313257605 0x89e18285 2^32/phi^(k+1)=2313257605.4907 alpha=0.5385972571 floor? true round? true odd? true
+
+== (a0) with scramble bits forced to 0 the rank is the classic 8x8 Bayer matrix
+unscrambled rank == Bayer 8x8: true
+
+== (a1) the per-parent scramble: which 2x2 arrangements occur (level 0, seed 1, 512x512)
+distinct arrangements [r(0,0) r(1,0) r(0,1) r(1,1)]: 8 of 24; 0231:8188 0321:8276 1230:8106 1320:8097 2013:8318 2103:8179 3012:8219 3102:8153
+equals the 8 rotations/reflections of the Bayer cell: true
+ranks {0,1} always on one diagonal: true
+
+== (a) aligned-block permutation property, 1024x1024, frames 0/1/999999, 6 seeds
+blocks tested 2064384 failures 0
+rank low 26 bits OR-ed over 1e5 samples: 0
+
+== (b,c) tile phase: values in a tile are 64 equally spaced values plus a per-tile offset
+tiles x frames tested 16384 | spacing != 1/64 exactly: 0 | fixed 64-bin histogram not all-ones: 0 | 2x2 spacing != 1/4: 0 | 4x4 spacing != 1/16: 0
+sub-bin offset of tiles (fraction of 1/64): mean 0.498 hist8 493,533,534,504,501,534,495,502
+tile mean min/max 0.49219 0.50781 (63/128 = 0.49219 , 65/128 = 0.50781)
+512x512 image, 64-bin histogram min/max count: 4096 4096 (expected exactly 4096)
+
+== (d) temporal behaviour
+bits(t+1) - bits(t) == step (mod 2^32) at random t up to 2^32: true
+wrap: bits at index 2^32-1 plus step == bits at index 0: true
+all steps: 2^k * step != 0 mod 2^32 for k<32 (order of step is exactly 2^32): true
+distinct 24-bit outputs of one pixel in the first 2^24 frames: 14959656 of 16777216
+N=8 distinct gap lengths 2 max/min gap ratio 1.618 | star discrepancy 0.1178 white 0.3160
+N=16 distinct gap lengths 3 max/min gap ratio 2.618 | star discrepancy 0.0620 white 0.2173
+N=64 distinct gap lengths 3 max/min gap ratio 2.618 | star discrepancy 0.0287 white 0.0950
+N=256 distinct gap lengths 3 max/min gap ratio 2.618 | star discrepancy 0.0090 white 0.0454
+N=1000 distinct gap lengths 3 max/min gap ratio 2.617 | star discrepancy 0.0021 white 0.0174
+float32 IGN scroll at frame 100 : coordinate 1559.32373046875 ulp 2.44e-4 pixels
+float32 IGN scroll at frame 10000 : coordinate 56882.87890625 ulp 7.81e-3 pixels
+float32 IGN scroll at frame 1000000 : coordinate 5589238.5 ulp 5.00e-1 pixels
+float32 IGN scroll at frame 10000000 : coordinate 55883376 ulp 8.00e+0 pixels
+
+== (e) unaligned windows and tile boundaries (seed 1, frame 0, 1024x1024; white baseline same size)
+2x2 windows at offset (0,0): HSN occupied 4.00/4 (min 4), window-mean RMS error 0.07217
+2x2 windows at offset (1,0): HSN occupied 3.00/4 (min 2), window-mean RMS error 0.11781
+2x2 windows at offset (1,1): HSN occupied 2.74/4 (min 1), window-mean RMS error 0.14254
+2x2 windows: WHITE occupied 2.73/4 (min 1), window-mean RMS error 0.14461
+4x4 windows at offset (0,0): HSN occupied 16.00/16 (min 16), window-mean RMS error 0.01804
+4x4 windows at offset (1,1): HSN occupied 11.66/16 (min 9), window-mean RMS error 0.05520
+4x4 windows at offset (2,2): HSN occupied 10.93/16 (min 4), window-mean RMS error 0.03571
+4x4 windows at offset (4,4): HSN occupied 16.00/16 (min 16), window-mean RMS error 0.01804
+4x4 windows: WHITE occupied 10.31/16 (min 5), window-mean RMS error 0.07227
+8x8 windows at offset (0,0): HSN occupied 64.00/64 (min 64), window-mean RMS error 0.00450
+8x8 windows at offset (1,0): HSN occupied 57.00/64 (min 56), window-mean RMS error 0.01490
+8x8 windows at offset (1,1): HSN occupied 52.28/64 (min 49), window-mean RMS error 0.02015
+8x8 windows at offset (2,2): HSN occupied 46.63/64 (min 36), window-mean RMS error 0.01385
+8x8 windows at offset (4,0): HSN occupied 47.95/64 (min 32), window-mean RMS error 0.00753
+8x8 windows at offset (4,4): HSN occupied 43.69/64 (min 16), window-mean RMS error 0.00904
+8x8 windows: WHITE occupied 40.67/64 (min 32), window-mean RMS error 0.03636
+horizontal neighbours inside a 2x2 block: mean toroidal |dv| 0.3748, min 0.2500
+horizontal neighbours white: mean toroidal |dv| 0.2502, min 0.0000
+horizontal neighbours across 2x2 edge (same 4x4): mean toroidal |dv| 0.2498, min 0.0625
+horizontal neighbours across 4x4 edge (same tile): mean toroidal |dv| 0.2499, min 0.0156
+horizontal neighbours across 8x8 tile edge: mean toroidal |dv| 0.2503, min 0.0000
+
+== (g) relationship between two dimensions (seeds 117/118 = VXGI rotation/elevation), per aligned tile
+correlation coefficient of (u,v) ranks over 262144 pixels: -0.0025
+hsn    2x2 grid: occupied 4.00/4, RMS count deviation 3.13 | 4x4 grid: occupied 15.85/16, RMS count deviation 1.64 | 8x8 grid: occupied 40.21/64, RMS count deviation 0.98
+lhs    2x2 grid: occupied 4.00/4, RMS count deviation 1.57 | 4x4 grid: occupied 15.92/16, RMS count deviation 1.48 | 8x8 grid: occupied 43.43/64, RMS count deviation 0.88
+white  2x2 grid: occupied 4.00/4, RMS count deviation 3.18 | 4x4 grid: occupied 15.75/16, RMS count deviation 1.90 | 8x8 grid: occupied 40.60/64, RMS count deviation 0.99
+2x2 blocks by number of (u,v) quadrants occupied [0,1,2,3,4]: 0,0,65536,0,0
+
+== (h) per-pixel temporal 2D point sets: L2 star discrepancy of the first N (u,v) samples
+N=16 R2 steps: 0.0562 | R4 steps [0],[1] (what VXGI uses): 0.0604 | R4 steps [2],[3]: 0.0533 | R4 steps [0],[2] (SSR GGX x + march jitter): 0.0542 | shared golden step: 0.0832 | white: 0.0910
+N=64 R2 steps: 0.0164 | R4 steps [0],[1] (what VXGI uses): 0.0308 | R4 steps [2],[3]: 0.0213 | R4 steps [0],[2] (SSR GGX x + march jitter): 0.0321 | shared golden step: 0.0752 | white: 0.0470
+N=256 R2 steps: 0.0061 | R4 steps [0],[1] (what VXGI uses): 0.0071 | R4 steps [2],[3]: 0.0109 | R4 steps [0],[2] (SSR GGX x + march jitter): 0.0155 | shared golden step: 0.0747 | white: 0.0209
+N=1024 R2 steps: 0.0016 | R4 steps [0],[1] (what VXGI uses): 0.0027 | R4 steps [2],[3]: 0.0021 | R4 steps [0],[2] (SSR GGX x + march jitter): 0.0137 | shared golden step: 0.0745 | white: 0.0106
+
+== (f) output precision and range
+min 5.960464477539063e-8 max 0.9999998211860657 (largest representable output 0.9999999403953552 ) non-float32-exact or non-24-bit values: 0
+if all 32 bits were converted instead: fround(0xffffffff) / 2^32 = 1 (would reach 1.0)
