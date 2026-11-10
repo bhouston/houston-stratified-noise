@@ -1,4 +1,4 @@
-// Measurement-only sampler variants (not part of any PR). Selected with ?noise=hash|ign|vc|hhwr2|white.
+// Measurement-only sampler variants (not part of any PR). Selected with ?noise=hash|ign|vc|hsnr2|white.
 import { Fn, float, interleavedGradientNoise, uint, vec2, vec4 } from 'three/tsl';
 import { R2_STEPS, R4_STEPS, bindHierarchicalHashedWeyl, hierarchicalHashedWeyl } from './HierarchicalHashedWeyl.js';
 import { bindWhiteNoise } from './MeasureWhiteNoise.js';
@@ -64,7 +64,7 @@ export function bindIgnRd( resolution, seed = 0, steps = R4_STEPS ) {
 
 // --- C. The pull request noise with the R2 steps (VXGI only): same seeds as bindHierarchicalHashedWeyl( resolution, seed ).xy
 
-export function bindHhwR2( resolution, seed = 0 ) {
+export function bindHsnR2( resolution, seed = 0 ) {
 
 	return Fn( ( [ uvCoord, sampleIndex ] ) => {
 
@@ -92,7 +92,7 @@ export function measureBindNoise( resolution, seed, dimensions ) {
 		case 'f': return bindAnalyticPerDimensionLattices( resolution, seed, R4_ALPHAS );
 		case 'fr2': return bindAnalyticPerDimensionLattices( resolution, seed, R2_ALPHAS );
 		case 'g': return bindAnalyticR4( resolution, seed );
-		case 'hhwr2': return bindHhwR2( resolution, seed );
+		case 'hsnr2': return bindHsnR2( resolution, seed );
 		default: return bindHierarchicalHashedWeyl( resolution, seed ); // PR head
 
 	}

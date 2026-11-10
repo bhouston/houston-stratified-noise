@@ -4,7 +4,7 @@
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhwctl_r0",
+  "name": "hsnctl_r0",
   "fps": 5
  },
  {
@@ -20,7 +20,7 @@
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhwctl_r1",
+  "name": "hsnctl_r1",
   "fps": 5
  },
  {
@@ -36,7 +36,7 @@
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhwctl_r2",
+  "name": "hsnctl_r2",
   "fps": 5
  },
  {
@@ -52,7 +52,7 @@
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhwctl_r3",
+  "name": "hsnctl_r3",
   "fps": 5
  },
  {
@@ -68,7 +68,7 @@
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhwctl_r4",
+  "name": "hsnctl_r4",
   "fps": 5
  },
  {
@@ -84,7 +84,7 @@
   "dir": "fps_ssr",
   "page": "measure_ssr.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhwctl_r0",
+  "name": "hsnctl_r0",
   "fps": 5
  },
  {
@@ -100,7 +100,7 @@
   "dir": "fps_ssr",
   "page": "measure_ssr.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhwctl_r1",
+  "name": "hsnctl_r1",
   "fps": 5
  },
  {
@@ -116,7 +116,7 @@
   "dir": "fps_ssr",
   "page": "measure_ssr.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhwctl_r2",
+  "name": "hsnctl_r2",
   "fps": 5
  },
  {

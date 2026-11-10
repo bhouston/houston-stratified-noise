@@ -12,7 +12,7 @@
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhw_r0",
+  "name": "hsn_r0",
   "fps": 5
  },
  {
@@ -35,8 +35,8 @@
   "tree": "head",
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
-  "query": "noise=hhwr2&w=1920&h=1080",
-  "name": "hhwr2_r0",
+  "query": "noise=hsnr2&w=1920&h=1080",
+  "name": "hsnr2_r0",
   "fps": 5
  },
  {
@@ -52,7 +52,7 @@
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhw_r1",
+  "name": "hsn_r1",
   "fps": 5
  },
  {
@@ -75,8 +75,8 @@
   "tree": "head",
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
-  "query": "noise=hhwr2&w=1920&h=1080",
-  "name": "hhwr2_r1",
+  "query": "noise=hsnr2&w=1920&h=1080",
+  "name": "hsnr2_r1",
   "fps": 5
  },
  {
@@ -92,7 +92,7 @@
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhw_r2",
+  "name": "hsn_r2",
   "fps": 5
  },
  {
@@ -115,8 +115,8 @@
   "tree": "head",
   "dir": "fps_vxgi",
   "page": "measure_vxgi.html",
-  "query": "noise=hhwr2&w=1920&h=1080",
-  "name": "hhwr2_r2",
+  "query": "noise=hsnr2&w=1920&h=1080",
+  "name": "hsnr2_r2",
   "fps": 5
  },
  {
@@ -132,7 +132,7 @@
   "dir": "fps_ssr",
   "page": "measure_ssr.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhw_r0",
+  "name": "hsn_r0",
   "fps": 5
  },
  {
@@ -164,7 +164,7 @@
   "dir": "fps_ssr",
   "page": "measure_ssr.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhw_r1",
+  "name": "hsn_r1",
   "fps": 5
  },
  {
@@ -196,7 +196,7 @@
   "dir": "fps_ssr",
   "page": "measure_ssr.html",
   "query": "noise=default&w=1920&h=1080",
-  "name": "hhw_r2",
+  "name": "hsn_r2",
   "fps": 5
  },
  {

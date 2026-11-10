@@ -11,8 +11,8 @@ bake = json.load(open(OUT + 'bake_metrics.json'))
 crop = lambda name: np.asarray(Image.open(CROPS + name + '.webp').convert('RGB')) / 255
 
 SURFACE, INK, INK2, GRID = '#fcfcfb', '#0b0b0b', '#52514e', '#e4e3df'
-COLORS = {'hhw': '#2a78d6', 'hash': '#eb6834', 'ign': '#1baf7a', 'vc': '#6250d6', 'hhwr2': '#eda100', 'shared': '#e87ba4'}
-LABELS = {'hhw': 'HSN (upstream PR)', 'hash': 'Hash + R$_d$ steps', 'ign': 'IGN + R$_d$ steps', 'vc': 'Void-and-cluster + R$_d$', 'hhwr2': 'HSN, R2 steps', 'shared': 'HSN, shared golden step'}
+COLORS = {'hsn': '#2a78d6', 'hash': '#eb6834', 'ign': '#1baf7a', 'vc': '#6250d6', 'hsnr2': '#eda100', 'shared': '#e87ba4'}
+LABELS = {'hsn': 'HSN (upstream PR)', 'hash': 'Hash + R$_d$ steps', 'ign': 'IGN + R$_d$ steps', 'vc': 'Void-and-cluster + R$_d$', 'hsnr2': 'HSN, R2 steps', 'shared': 'HSN, shared golden step'}
 plt.rcParams.update({'font.family': 'DejaVu Sans', 'font.size': 11, 'text.color': INK, 'axes.labelcolor': INK2, 'xtick.color': INK2, 'ytick.color': INK2,
                      'axes.edgecolor': GRID, 'figure.facecolor': SURFACE, 'axes.facecolor': SURFACE, 'savefig.facecolor': SURFACE})
 
@@ -44,12 +44,12 @@ def realtime(ax, fx, title, series, ylim):
     sds = {s: [v[s]['sd'][k] / base[k] * 100 for k in keys] for s in series}
     bars(ax, title, ['RMSE', 'Bias', 'Flicker'], series, vals, sds, ylim)
 
-realtime(fig.add_subplot(gs[0, 0:4]), 'vxgi', 'VXGI, real time (before: IGN pair)', ['hhw', 'hash', 'ign', 'vc', 'hhwr2'], (-90, 60))
-realtime(fig.add_subplot(gs[0, 4:8]), 'ssr', 'SSR, denoised (before: analytic R2)', ['hhw', 'hash', 'ign', 'vc'], (-90, 60))
+realtime(fig.add_subplot(gs[0, 0:4]), 'vxgi', 'VXGI, real time (before: IGN pair)', ['hsn', 'hash', 'ign', 'vc', 'hsnr2'], (-90, 60))
+realtime(fig.add_subplot(gs[0, 4:8]), 'ssr', 'SSR, denoised (before: analytic R2)', ['hsn', 'hash', 'ign', 'vc'], (-90, 60))
 b = bake['samplers']; keys = ('rmse', 'bias', 'grain')
-bars(fig.add_subplot(gs[0, 8:12]), 'Light map bake, 64 samples (before: IGN pair)', ['RMSE', 'Bias (low-pass)', 'Grain (high-pass)'], ['shared', 'hhwr2'],
-     {s: [(b[m]['mean'][k] / b['prev']['mean'][k] - 1) * 100 for k in keys] for s, m in (('shared', 'shared'), ('hhwr2', 'r2'))},
-     {s: [b[m]['sd'][k] / b['prev']['mean'][k] * 100 for k in keys] for s, m in (('shared', 'shared'), ('hhwr2', 'r2'))}, (-110, 310))
+bars(fig.add_subplot(gs[0, 8:12]), 'Light map bake, 64 samples (before: IGN pair)', ['RMSE', 'Bias (low-pass)', 'Grain (high-pass)'], ['shared', 'hsnr2'],
+     {s: [(b[m]['mean'][k] / b['prev']['mean'][k] - 1) * 100 for k in keys] for s, m in (('shared', 'shared'), ('hsnr2', 'r2'))},
+     {s: [b[m]['sd'][k] / b['prev']['mean'][k] * 100 for k in keys] for s, m in (('shared', 'shared'), ('hsnr2', 'r2'))}, (-110, 310))
 
 def show(ax, img, title, nearest=True):
     ax.imshow(np.clip(img, 0, 1), interpolation='nearest' if nearest else 'lanczos'); ax.set_xticks([]); ax.set_yticks([])
@@ -57,7 +57,7 @@ def show(ax, img, title, nearest=True):
     ax.set_title(title, loc='left', fontsize=10.5, color=INK, pad=5, linespacing=1.3)
 
 def realtime_images(row, fx, name, before_label, box, exposure, gain):
-    for i, (v, label) in enumerate((('base', before_label), ('hhw', 'after (HSN)'))):
+    for i, (v, label) in enumerate((('base', before_label), ('hsn', 'after (HSN)'))):
         show(fig.add_subplot(gs[row, i * 3:i * 3 + 3]), crop(f'{fx}_{v}_frame'), f'{name} {label}\none frame after TRAA, crop')
         show(fig.add_subplot(gs[row, 6 + i * 3:9 + i * 3]), crop(f'{fx}_{v}_error_full'), f'{name} {label}\n256-frame mean − reference, ×{gain}', nearest=False)
 

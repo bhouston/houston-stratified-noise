@@ -40,7 +40,7 @@ for fx in ('vxgi', 'ssr', 'ssr_only'):
         return dict(runs=runs, noise_of_run_mean=mean_noise, mean={k: float(np.mean([r[k] for r in runs])) for k in keys},
                     sd={k: float(np.std([r[k] for r in runs], ddof=1)) for k in keys})
 
-    for v in ('base', 'hhw', 'hash', 'ign', 'vc', 'hhwr2', 'e', 'er2', 'f', 'fr2', 'g'):
+    for v in ('base', 'hsn', 'hash', 'ign', 'vc', 'hsnr2', 'e', 'er2', 'f', 'fr2', 'g'):
         names = sorted(os.path.basename(p)[:-5] for p in glob.glob(d + v + '_r?.json'))
         if names: res['variants'][v] = summarize(names, ref, ref_noise)
     # white-noise sampler itself: its 4 x 1024-frame runs, noise/flicker only (it is the reference, so no bias)
@@ -49,14 +49,14 @@ for fx in ('vxgi', 'ssr', 'ssr_only'):
 
     fps_dir = f'{RAW}fps_{fx}/'
     if os.path.isdir(fps_dir):
-        for v in ('base', 'hhw', 'hash', 'ign', 'hhwr2'):
+        for v in ('base', 'hsn', 'hash', 'ign', 'hsnr2'):
             f = [json.load(open(p))['result']['fps'] for p in sorted(glob.glob(fps_dir + v + '_r?.json'))]
             if f: res['variants'][v]['fps'] = dict(runs=f, median=float(np.median(f)), min=min(f), max=max(f))
-        ctl = [json.load(open(p))['result']['fps'] for p in sorted(glob.glob(fps_dir + 'hhwctl_r?.json'))]
-        if ctl: res['fps_hhw_control_in_vc_session'] = dict(runs=ctl, median=float(np.median(ctl)), min=min(ctl), max=max(ctl))
+        ctl = [json.load(open(p))['result']['fps'] for p in sorted(glob.glob(fps_dir + 'hsnctl_r?.json'))]
+        if ctl: res['fps_hsn_control_in_vc_session'] = dict(runs=ctl, median=float(np.median(ctl)), min=min(ctl), max=max(ctl))
         # later sessions on a busier GPU: fps of each variant relative to the HSN control of the same round
         fps = lambda name: {os.path.basename(p)[len(name) + 2:-5]: json.load(open(p))['result']['fps'] for p in glob.glob(fps_dir + name + '_r?.json')}
-        for control, names in (('hhwctl', ['vc']), ('hsnctl2', ['hashctl2', 'e', 'er2', 'f', 'fr2']), ('hsnctl3', ['basectl3', 'hashctl3', 'g'])):
+        for control, names in (('hsnctl', ['vc']), ('hsnctl2', ['hashctl2', 'e', 'er2', 'f', 'fr2']), ('hsnctl3', ['basectl3', 'hashctl3', 'g'])):
             c = fps(control)
             for name in names:
                 f = fps(name)

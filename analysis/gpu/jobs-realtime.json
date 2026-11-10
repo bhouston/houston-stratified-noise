@@ -67,7 +67,7 @@
   "dir": "vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default",
-  "name": "hhw_r0",
+  "name": "hsn_r0",
   "warmup": 128,
   "frames": 256
  },
@@ -76,7 +76,7 @@
   "dir": "vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default",
-  "name": "hhw_r1",
+  "name": "hsn_r1",
   "warmup": 171,
   "frames": 256
  },
@@ -85,7 +85,7 @@
   "dir": "vxgi",
   "page": "measure_vxgi.html",
   "query": "noise=default",
-  "name": "hhw_r2",
+  "name": "hsn_r2",
   "warmup": 233,
   "frames": 256
  },
@@ -147,8 +147,8 @@
   "tree": "head",
   "dir": "vxgi",
   "page": "measure_vxgi.html",
-  "query": "noise=hhwr2",
-  "name": "hhwr2_r0",
+  "query": "noise=hsnr2",
+  "name": "hsnr2_r0",
   "warmup": 128,
   "frames": 256
  },
@@ -156,8 +156,8 @@
   "tree": "head",
   "dir": "vxgi",
   "page": "measure_vxgi.html",
-  "query": "noise=hhwr2",
-  "name": "hhwr2_r1",
+  "query": "noise=hsnr2",
+  "name": "hsnr2_r1",
   "warmup": 171,
   "frames": 256
  },
@@ -165,8 +165,8 @@
   "tree": "head",
   "dir": "vxgi",
   "page": "measure_vxgi.html",
-  "query": "noise=hhwr2",
-  "name": "hhwr2_r2",
+  "query": "noise=hsnr2",
+  "name": "hsnr2_r2",
   "warmup": 233,
   "frames": 256
  },
@@ -238,7 +238,7 @@
   "dir": "ssr",
   "page": "measure_ssr.html",
   "query": "noise=default",
-  "name": "hhw_r0",
+  "name": "hsn_r0",
   "warmup": 128,
   "frames": 256
  },
@@ -247,7 +247,7 @@
   "dir": "ssr",
   "page": "measure_ssr.html",
   "query": "noise=default",
-  "name": "hhw_r1",
+  "name": "hsn_r1",
   "warmup": 171,
   "frames": 256
  },
@@ -256,7 +256,7 @@
   "dir": "ssr",
   "page": "measure_ssr.html",
   "query": "noise=default",
-  "name": "hhw_r2",
+  "name": "hsn_r2",
   "warmup": 233,
   "frames": 256
  },
@@ -382,7 +382,7 @@
   "dir": "ssr_only",
   "page": "measure_ssr.html",
   "query": "noise=default&output=ssr",
-  "name": "hhw_r0",
+  "name": "hsn_r0",
   "warmup": 128,
   "frames": 256
  },
@@ -391,7 +391,7 @@
   "dir": "ssr_only",
   "page": "measure_ssr.html",
   "query": "noise=default&output=ssr",
-  "name": "hhw_r1",
+  "name": "hsn_r1",
   "warmup": 171,
   "frames": 256
  },
@@ -400,7 +400,7 @@
   "dir": "ssr_only",
   "page": "measure_ssr.html",
   "query": "noise=default&output=ssr",
-  "name": "hhw_r2",
+  "name": "hsn_r2",
   "warmup": 233,
   "frames": 256
  },

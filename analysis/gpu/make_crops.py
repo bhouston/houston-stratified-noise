@@ -13,8 +13,8 @@ def save(name, img):
 
 
 # real-time effects: (crop box, exposure of the frame crop, gain of the error image), as in the figures
-for fx, variants, (x, y, w, h), exposure, gain in (('vxgi', ['base', 'hhw', 'hash', 'ign', 'vc', 'hhwr2', 'e', 'er2', 'f', 'fr2', 'g'], (240, 140, 300, 200), 1.6, 40),
-                                                     ('ssr', ['base', 'hhw', 'hash', 'ign', 'vc', 'e', 'f', 'g'], (470, 400, 300, 200), 2.5, 300)):
+for fx, variants, (x, y, w, h), exposure, gain in (('vxgi', ['base', 'hsn', 'hash', 'ign', 'vc', 'hsnr2', 'e', 'er2', 'f', 'fr2', 'g'], (240, 140, 300, 200), 1.6, 40),
+                                                     ('ssr', ['base', 'hsn', 'hash', 'ign', 'vc', 'e', 'f', 'g'], (470, 400, 300, 200), 2.5, 300)):
     L = lambda n: np.fromfile(f'{RAW}{fx}/{n}', dtype=np.float32).reshape(720, 960, 3).astype(np.float64)
     ref = sum(L(n + '_mean.f32') for n in ('white_base_s1', 'white_head_s2', 'white_base_s3', 'white_head_s4')) / 4
     for v in variants:
@@ -23,7 +23,7 @@ for fx, variants, (x, y, w, h), exposure, gain in (('vxgi', ['base', 'hhw', 'has
         err = (L(v + '_r0_mean.f32') - ref) * gain + 0.5
         save(f'{fx}_{v}_frame', srgb(L(v + '_r0_last.f32')[y:y + h, x:x + w] * exposure))  # one frame after TRAA
         save(f'{fx}_{v}_error_crop', err[y - 40:y + h + 40, x - 40:x + w + 60])  # 256-frame mean - reference, amplified
-        if v in ('base', 'hhw'):  # the whole frame at half resolution (it is shown about 400 px wide)
+        if v in ('base', 'hsn'):  # the whole frame at half resolution (it is shown about 400 px wide)
             save(f'{fx}_{v}_error_full', err.reshape(360, 2, 480, 2, 3).mean((1, 3)))
 
 # light map bake

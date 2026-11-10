@@ -6,9 +6,9 @@
 	],
 	"Most surprising findings, mostly unfavourable": [
 		"**Per-pixel convergence comes from the Weyl steps, not from {S}.** A plain PCG hash + R_d steps, IGN + R_d and V&C + R_d all match {S} without a spatial filter (5.18 / 5.16 / 5.15 / 5.18).",
-		"**For 2-value and 4-value, {S}'s hierarchy adds almost nothing over hash + R_d after about four frames.** 2-value EMA + blur is 14.2 for both. {S} leads only on a single frame (13–21% for 2 values per pixel, 11–18% for 4 values per pixel) and for 1 values per pixel (25–53%).",
+		"**For two and four values per pixel, {S}'s hierarchy adds little over hash + R_d once a few frames are accumulated.** For two values it ties from about four frames on (EMA + blur is 14.2 for both). For four values it keeps a small lead, 4–14% depending on the window (about 14% at 32 frames). The clear leads are on a single frame (13–21% for two values, 11–18% for four) and for one value per pixel (25–53%).",
 		"**`R2_STEPS[0]` (0.7549, about 3/4) resonates with the base-4 hierarchy.** With that step {S} is 14% worse than a hash phase under EMA + 3×3; with every other step it is 10–38% better.",
-		"**Animated IGN beats {S} for one value per pixel with a blur:** 1.5× under EMA, 1.7× on a single frame, 41% less flicker. IGN + golden Weyl also beats it by 18%.",
+		"**IGN-based samplers beat {S} for one value per pixel with a blur.** Animated IGN: 1.5× under EMA, 1.7× on a single frame, 41% less flicker. IGN + golden Weyl also beats it by 18%.",
 		"**Against FAST,** {S}'s single-frame error is 34% (1-value) and 56% (2-value) higher, and its filtered flicker is 35–57% higher.",
 		"**The Three.js pull request's step usage is confirmed weak.** VXGI uses `R4_STEPS[0],[1]`; `R2_STEPS` is exported but unused. That costs 52% more per-pixel error at N=64 (24.6 vs 16.2) and nothing under EMA + 3×3 (17.0 vs 16.9), so only the unfiltered bake would benefit from R2. `R4_STEPS[0]` is about 6/7 and is 4.4× worse than golden as a 1-value sequence at N=64; `[3]` is about 7/13 and 6.3× worse at N=256. `R4_STEPS[0],[2]` puts samples on five visible lines (a₁ + 5a₂ is an integer to 0.0002).",
 		"**The old SSR analytic R2 is temporally red:** an EMA passes 2.7× more of its noise than white, and its four outputs are functions of one scalar.",
@@ -111,7 +111,7 @@
 		"{S} error divided by A or B (below 1.00 means {S} is better), at N = 1 / 4 / 8 / 16 / EMA 0.1:",
 		"**One value per pixel.** {S} beats the hash by 13–66%, but loses to IGN + golden at short histories: 73% worse on a single frame, 35% at four frames, 18% under EMA + 3×3.",
 		"**Two values.** {S} beats the hash only on a single frame (13–21%) and ties from four frames on. It beats the IGN phase by 9–29% with small blurs and 2–3× at σ2, because IGN phases at offsets are cross-correlated; the one exception is a 16-frame window, where B is 22% better.",
-		"**Four values.** {S} beats the hash by 11–18% on one frame and 4–9% at four frames, then ties. It beats the IGN phase by 19–39% with small blurs and about 3× at σ2.",
+		"**Four values.** {S} beats the hash by 11–18% on one frame and 4–9% at four frames, and keeps a small lead after that (4–14% depending on the window; about 14% at 32 frames, level at 16). It beats the IGN phase by 19–39% with small blurs and about 3× at σ2.",
 		"{S} is the only one of the three that is never the worst."
 	],
 	"X5. Step and hierarchy resonance": [
@@ -124,7 +124,7 @@
 	],
 	"Plain-language conclusions": [
 		"**Where {S} matches blue noise textures**",
-		"One value per pixel under EMA + blur: within 3% of V&C and FAST, 11% better than STBN.",
+		"One value per pixel under EMA + blur, on thresholded signals: within 3% of V&C and FAST, 11% better than STBN. On the smooth one-value integrands FAST is about 30% better and STBN about 14% better.",
 		"Temporal spectrum on thresholded signals: about level with STBN and FAST.",
 		"Every frame has the same spatial quality, and the accumulated residual stays blue-ish.",
 		"Four values per pixel: 7–12% better than stacked FAST or STBN.",
@@ -141,9 +141,9 @@
 		"Textures and IGN in unfiltered accumulation: 1.9× FAST and 3.1× STBN for 2 values per pixel at N=256.",
 		"Any frame index, with no wrap needed.",
 		"**Where it loses or ties**",
-		"Animated IGN for one value with a blur: IGN is 1.5× better under EMA, 1.7× on a single frame, with 41% less flicker.",
+		"IGN-based samplers for one value with a blur: animated IGN is 1.5× better under EMA, 1.7× on a single frame, with 41% less flicker.",
 		"IGN + golden Weyl for one value: 18% better.",
-		"Hash + R_d for two or four values: a tie from four frames on.",
+		"Hash + R_d for two values: a tie from four frames on. For four values {S} keeps a small lead (4–14%).",
 		"Scrambled Sobol per pixel: 2.2× lower 2-value discrepancy at N=256, 3.8× lower for 4 values per pixel at N=1024.",
 		"Its own constants: `R4[0]` and `[3]` for 1 values per pixel, the `[0],[2]` pair, and `R2[0]` against the hierarchy."
 	],
