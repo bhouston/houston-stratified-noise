@@ -6,7 +6,7 @@
 	"license": "MIT",
 	"packageManager": "pnpm@12.16.1",
 	"scripts": {
-		"test": "node --test src/noise/noise.test.js",
+		"test": "node --test src/noise/noise.test.js analysis/gpu/harness/measure_frame_clock.test.js",
 		"analysis:solution": "node analysis/solution/structure.js && node analysis/solution/step-pairs.js && node analysis/solution/figures.js",
 		"analysis:spatial": "pnpm py analysis/spatial/run_all.py",
 		"dev": "vite",
